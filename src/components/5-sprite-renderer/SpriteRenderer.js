@@ -9,6 +9,7 @@ export default class SpriteRenderer extends React.Component {
     constructor(props) {
         super(props);
         this.createSprite();
+        this.props.updateFunctions.push(this.onRenderMoveOffset)
     }
 
     createSprite = () => {
@@ -16,10 +17,15 @@ export default class SpriteRenderer extends React.Component {
         const spriteMaterial = new THREE.SpriteMaterial({
             map: spriteMap,
         });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.x = 5
-        sprite.position.x = 1.5
-        SceneService.scene.add(sprite);
+        console.log(spriteMaterial)
+        spriteMaterial.map.repeat.x = 0.1
+        this.sprite = new THREE.Sprite(spriteMaterial);
+        this.offset = 0;
+        SceneService.scene.add(this.sprite);
+    }
+
+    onRenderMoveOffset = () => {
+        this.sprite.material.map.offset.x = (this.offset++ % 4) / 10
     }
 
     render() {
