@@ -45,6 +45,10 @@ export default class SpriteOrder extends React.Component {
 
         const distance = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff))
 
+        const denom = (Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)));
+        const unitX = Math.abs(xDiff / denom)
+        const unitY = Math.abs(yDiff / denom)
+
         if (distance <= speed * delta) {
             currentPosition.x = targetPosition.x;
             currentPosition.y = targetPosition.y;
@@ -52,15 +56,15 @@ export default class SpriteOrder extends React.Component {
         }
 
         if (xDiff > 0) {
-            currentPosition.x += (speed * delta)
+            currentPosition.x += (unitX * speed * delta)
         } else {
-            currentPosition.x -= (speed * delta)
+            currentPosition.x -= (unitX * speed * delta)
         }
 
         if (yDiff > 0) {
-            currentPosition.y += (speed * delta)
+            currentPosition.y += (unitY * speed * delta)
         } else {
-            currentPosition.y -= (speed * delta)
+            currentPosition.y -= (unitY * speed * delta)
         }
     }
 
