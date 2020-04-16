@@ -40,11 +40,11 @@ export default class SimpleRenderer extends React.Component {
         this.renderer.setSize(boundingRectInfo.width, boundingRectInfo.height);
     }
 
-    animate = () => {
+    animate = (now) => {
         this.props.updateFunctions && this.props.updateFunctions.forEach(func => {
-            func();
+            func(now);
         });
-        this.props.updateFunction && this.props.updateFunction();
+        this.props.updateFunction && this.props.updateFunction(now);
 
         requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);
