@@ -21,9 +21,7 @@ export default class SelectionMovement extends React.Component {
     componentDidMount() {
         window.addEventListener('click', this.onClick);
         window.addEventListener('mousedown', this.onMouseDown)
-        this.createZerg().sprite.sprite3dObject.position.y = 0.5;
-        this.createZerg().sprite.sprite3dObject.position.x = -0.5;
-        this.createZerg().sprite.sprite3dObject.position.x = 0.5;
+        this.createXZerg(100)
         this.props.updateFunctions.push(this.onTick);
         MouseService.onMouseDragReleaseFunctions.push(this.onDragRelease);
     }
@@ -31,6 +29,14 @@ export default class SelectionMovement extends React.Component {
     componentWillUnmount() {
         window.removeEventListener('click', this.onClick);
         window.removeEventListener('mousedown', this.onMouseDown);
+    }
+
+    createXZerg = (x) => {
+        for (let i = 0; i < x; i++) {
+            const zerg = this.createZerg();
+            zerg.sprite.sprite3dObject.position.x = Math.random() * 2 - 1;
+            zerg.sprite.sprite3dObject.position.y = Math.random() * 2 - 1;
+        }
     }
 
     createZerg = () => {
@@ -47,7 +53,13 @@ export default class SelectionMovement extends React.Component {
 
     onMouseDown = (event) => {
         if (event.button === 0) {
-            SelectionService.filterSelectedOn(thing => !(thing instanceof Zerg));
+            SelectionService.filterSelectedOn(thing => {
+                if (thing instanceof Zerg) {
+                    thing.sprite.toggleIndicatorOpacity(false);
+                    return false
+                }
+                return true
+            });
         } else if (event.button === 2) {
             const zergs = SelectionService.selected.filter(thing => thing instanceof Zerg)
             zergs.forEach(zerg => {
@@ -81,6 +93,7 @@ export default class SelectionMovement extends React.Component {
         intersects.forEach(thing => {
             const foundThing = this.zergs.find(zerg => zerg.sprite.sprite3dObject === thing.object)
             foundThing && SelectionService.addToSelected(foundThing);
+            foundThing && foundThing.sprite.toggleIndicatorOpacity(true);
         });
     }
 
