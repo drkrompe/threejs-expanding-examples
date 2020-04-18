@@ -5,6 +5,7 @@ import Zerglite from './Zerglite.png';
 import SceneService from '../../services/SceneService';
 import Sprite from './Sprite';
 import MouseService from '../../services/MouseService';
+import MovementHelper from '../../helpers/MovementHelper';
 
 export default class SpriteOrder extends React.Component {
 
@@ -20,7 +21,7 @@ export default class SpriteOrder extends React.Component {
             x: 0,
             y: 0
         }
-        this.zergSpeed = 0.5
+        this.zergSpeed = 1
     }
 
     createSprite = () => {
@@ -39,49 +40,26 @@ export default class SpriteOrder extends React.Component {
         SceneService.scene.add(cube);
     }
 
-    moveToward = (currentPosition, targetPosition, delta, speed) => {
-        const xDiff = targetPosition.x - currentPosition.x;
-        const yDiff = targetPosition.y - currentPosition.y;
-
-        const distance = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff))
-
-        const denom = (Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)));
-        const unitX = Math.abs(xDiff / denom)
-        const unitY = Math.abs(yDiff / denom)
-
-        if (distance <= speed * delta) {
-            currentPosition.x = targetPosition.x;
-            currentPosition.y = targetPosition.y;
-            return;
-        }
-
-        if (xDiff > 0) {
-            currentPosition.x += (unitX * speed * delta)
-        } else {
-            currentPosition.x -= (unitX * speed * delta)
-        }
-
-        if (yDiff > 0) {
-            currentPosition.y += (unitY * speed * delta)
-        } else {
-            currentPosition.y -= (unitY * speed * delta)
-        }
-    }
-
     onRenderMoveOffset = (timeNow) => {
         const delta = this.clock.getDelta();
         this.timeToNext -= delta;
-        if (this.timeToNext <= 0) {
-            this.zerg.showTextureIndex(this.offset++ % 4, 0)
-            this.timeToNext = this.changeFrameTime;
-        }
-        // this.zerg.sprite.material.rotation = 3.14 * ((this.timeToNext / this.changeFrameTime) * 2)
-        this.moveToward(
+        const movementData = MovementHelper.moveToward(
             this.zerg.sprite.position,
             this.targetLocation,
             delta,
             this.zergSpeed
         )
+        if (this.timeToNext <= 0) {
+            if (movementData.moving === 'left') {
+                this.zerg.setTextureInverse(true);
+                this.zerg.showTextureIndex(4 - (this.offset++ % 4), 0)
+            } else {
+                this.zerg.setTextureInverse(false);
+                this.zerg.showTextureIndex((this.offset++ % 4), 0)
+            }
+            this.timeToNext = this.changeFrameTime;
+        }
+        // this.zerg.sprite.material.rotation = 3.14 * ((this.timeToNext / this.changeFrameTime) * 2)
 
         if ((MouseService.mouse.x > 1 || MouseService.mouse.x < -1)
             || (MouseService.mouse.y > 1 || MouseService.mouse.y < -1)) {
