@@ -53,6 +53,10 @@ export default class SimpleRenderer extends React.Component {
     render() {
         return (
             <div
+                onContextMenu={(event) => {
+                    event.preventDefault();
+                    return false;
+                }}
                 className={ClassNames('simple-renderer', this.props.className)}
                 id={this.id}
             />
