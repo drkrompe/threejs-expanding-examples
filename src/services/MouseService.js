@@ -18,6 +18,9 @@ const onMouseMove = (event) => {
     const canvasData = getOffset(canvas);
     mouse.x = ((event.clientX - canvasData.left) / canvasData.width) * 2 - 1;
     mouse.y = -1 * ((event.clientY - canvasData.top) / canvasData.height) * 2 + 1;
+    onMouseMoveFunctions.forEach(func => {
+        func(mouse);
+    });
 }
 
 const intersectingObjects = (camera, scene) => {
@@ -33,11 +36,16 @@ const getMousePosition = () => {
     return mouse;
 }
 
+const onMouseMoveFunctions = [];
+const onMouseDragReleaseFunctions = [];
+
 const MouseService = {
     mouse,
-    onMouseMove: onMouseMove,
-    intersectingObjects: intersectingObjects,
-    getMousePosition: getMousePosition,
+    onMouseMove,
+    intersectingObjects,
+    getMousePosition,
+    onMouseMoveFunctions,
+    onMouseDragReleaseFunctions
 };
 
 export default MouseService;
