@@ -46,9 +46,17 @@ export default class SelectionMovement extends React.Component {
     }
 
     onMouseDown = (event) => {
-        // Remove all zerg currently selected if left mouse button
         if (event.button === 0) {
             SelectionService.filterSelectedOn(thing => !(thing instanceof Zerg));
+        } else if (event.button === 2) {
+            const zergs = SelectionService.selected.filter(thing => thing instanceof Zerg)
+            zergs.forEach(zerg => {
+                zerg.targetLocation = Object.assign({}, MouseService.mouse);
+                if (zergs.length > 1) {
+                    zerg.targetLocation.x += Math.random() * 0.09 - 0.09
+                    zerg.targetLocation.y += Math.random() * 0.09 - 0.09
+                }
+            });
         }
     }
 
