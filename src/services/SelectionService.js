@@ -4,7 +4,9 @@ class SelectionServiceClass {
     }
 
     addToSelected = (thing) => {
+        console.log("Add to selected", thing)
         if (this.selected.includes(thing)) {
+            console.log("contains")
             return;
         }
         this.selected.push(thing);

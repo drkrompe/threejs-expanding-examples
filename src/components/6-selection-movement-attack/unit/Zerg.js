@@ -1,23 +1,18 @@
 import * as THREE from 'three';
-import DilSprite from "./DilSprite";
-import Zerglite from "./Zerglite.png";
-import MovementHelper from '../../helpers/MovementHelper';
-
-import Unit from '../6-selection-movement-attack/unit/Unit';
-
-import CameraService from '../../services/CameraService';
-import SceneService from '../../services/SceneService';
-import DMath from '../../helpers/DMath';
+import Unit from "./Unit";
+import Zerglite from './Zerglite.png';
+import SceneService from '../../../services/SceneService';
+import CameraService from '../../../services/CameraService';
+import MovementHelper from '../../../helpers/MovementHelper';
+import DMath from '../../../helpers/DMath';
 
 export default class Zerg extends Unit {
-    constructor(size = 0.15) {
-        super(Zerglite, 10, 1, 'zerg', true);
+    constructor(selectable = true, size = 0.18) {
+        super(Zerglite, 10, 1, 'zerg', selectable);
         this.changeFrameTime = 0.18;
         this.timeToNextTextureFrame = this.changeFrameTime;
         this.offset = 0;
-
         this.zergSpeed = 0.33;
-
         this.dilsprite.sprite3dObject.scale.x = size - 0.05;
         this.dilsprite.sprite3dObject.scale.y = size;
         this.dilsprite.sprite3dObject.self = this;
@@ -29,8 +24,8 @@ export default class Zerg extends Unit {
         this._atTargetLocation();
         this._moveTowardTargetLocation(timeDelta);
         this._updateTexture(timeDelta);
-        this._moveAwayFromOtherZergOnLocation()
-    };
+        this._moveAwayFromOtherZergOnLocation();
+    }
 
     _updateTexture = (timeDelta) => {
         this.timeToNextTextureFrame -= timeDelta;
@@ -48,6 +43,7 @@ export default class Zerg extends Unit {
     }
 
     _moveTowardTargetLocation = (timeDelta) => {
+        window.debug && console.log("Move toward", this.targetLocation, this);
         if (!this.targetLocation) {
             return;
         }
@@ -66,7 +62,7 @@ export default class Zerg extends Unit {
         )
         this.raycaster.ray.direction.z = 1
         const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
-        const others = intersects.filter(thing => thing.object.self !== this && thing.object.self instanceof Zerg);
+        const others = intersects.filter(thing => thing.object.self !== this && thing.object.self instanceof Unit);
         if (others.length > 0) {
             const directionToOtherX = this.dilsprite.sprite3dObject.position.x - others[0].object.self.dilsprite.sprite3dObject.position.x;
             const directionToOtherY = this.dilsprite.sprite3dObject.position.y - others[0].object.self.dilsprite.sprite3dObject.position.y;

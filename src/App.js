@@ -7,6 +7,7 @@ import TextureLoading from './components/4-texture-loading/TextureLoading';
 import SpriteRenderer from './components/5-sprite-renderer/SpriteRenderer';
 import SpriteOrder from './components/5-sprite-order/SpriteOrder';
 import SelectionMovement from './components/6-selection-movement/SelectionMovement';
+import SelectionMovementAttack from './components/6-selection-movement-attack/SelectionMovementAttack';
 
 function App() {
 	CameraService.camera.position.z = -1;
@@ -14,7 +15,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<SelectionMovement
+			<SelectionMovementAttack
 				renderer={RendererService.renderer}
 				camera={CameraService.camera}
 				scene={SceneService.scene}

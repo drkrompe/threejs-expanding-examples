@@ -2,10 +2,10 @@ import React from 'react';
 import * as THREE from 'three';
 import MouseCaptureRenderer from '../mousecapturerenderer/MouseCaptureRenderer';
 import MouseService from '../../services/MouseService';
-import DMath from '../../helpers/DMath';
 import SceneService from '../../services/SceneService';
 import CameraService from '../../services/CameraService';
 import SelectionService from '../../services/SelectionService';
+import Unit from '../../components/6-selection-movement-attack/unit/Unit';
 
 export default class MouseDragCaptureRenderer extends React.Component {
 
@@ -32,11 +32,16 @@ export default class MouseDragCaptureRenderer extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('mousedown', this.onMousePress);
-        window.removeEventListener('mousedown', this.onMouseRelease);
-        MouseService.onMouseMoveFunctions.remove(this.renderMouseDragUpdate);
+        window.removeEventListener('mouseup', this.onMouseRelease);
+        window.removeEventListener('mousemove', this.onMouseMove);
+        delete MouseService.onMouseMoveFunctions[this.renderMouseDragUpdate]
     }
 
     onMousePress = (event) => {
+        // MouseService.onMousePressFunctions && MouseService.onMousePressFunctions.forEach(func => {
+        //     func(event);
+        // })
+
         if (event.button !== 0) {
             return;
         }
@@ -70,6 +75,11 @@ export default class MouseDragCaptureRenderer extends React.Component {
         this.dragPlane.scale.x = 0.01
         this.dragPlane.scale.y = 0.01
         this.props.scene.add(this.dragPlane);
+
+        SelectionService.filterSelectedOn(selected => {
+            selected.dilsprite.toggleIndicatorOpacity(false);
+            return !selected instanceof Unit;
+        })
     }
 
     renderMouseDragUpdate = () => {
@@ -103,9 +113,32 @@ export default class MouseDragCaptureRenderer extends React.Component {
         MouseService.onMouseDragReleaseFunctions.forEach(func => {
             func(dragVerts);
         });
+        this.onDragRelease(dragVerts);
         // Remove dragplane From scsne
         SceneService.scene.remove(this.dragPlane);
         this.dragPlane = undefined;
+    }
+
+    onDragRelease = (dragVerts) => {
+        const traceDist = 0.09
+        for (let x = dragVerts.topLeft.x; x < dragVerts.bottomRight.x; x += traceDist) {
+            for (let y = dragVerts.topLeft.y; y < dragVerts.bottomRight.y; y += traceDist) {
+                this.raycastForSelectableUnitsAddToSelected({ x, y });
+            }
+        }
+        console.log(SelectionService.selected)
+    }
+
+    raycastForSelectableUnitsAddToSelected = (position) => {
+        this.raycaster.setFromCamera(position, CameraService.camera);
+        this.raycaster.ray.direction.z = 1
+        const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
+        intersects.forEach(thing => {
+            if (thing.object.self instanceof Unit && thing.object.self.selectable) {
+                SelectionService.addToSelected(thing.object.self);
+                thing.object.self.dilsprite.toggleIndicatorOpacity(true);
+            }
+        });
     }
 
     render() {
