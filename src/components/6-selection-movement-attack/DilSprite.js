@@ -2,7 +2,14 @@ import * as THREE from 'three';
 
 export default class DilSprite {
 
-    constructor(indexedTexture, textureColumns, textureRows, name = 'dilsprite', hasIndicator = true) {
+    constructor(
+        indexedTexture,
+        textureColumns,
+        textureRows,
+        name = 'dilsprite',
+        hasIndicator = true,
+        indicatorYOffset = -0.25
+    ) {
         this._textureRows = textureRows;
         this._textureColumns = textureColumns;
         const texture = new THREE.TextureLoader().load(indexedTexture);
@@ -26,7 +33,7 @@ export default class DilSprite {
             this.indicatorMesh.scale.x = 0.5
             this.indicatorMesh.scale.y = 0.5
             this.indicatorMesh.rotation.x = Math.PI / 2.5
-            this.indicatorMesh.position.y = -0.25
+            this.indicatorMesh.position.y = indicatorYOffset
             this.indicatorMesh.position.z = -1
             this.indicatorMesh.parent = this.sprite3dObject
             this.sprite3dObject.add(this.indicatorMesh)
