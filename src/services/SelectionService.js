@@ -1,23 +1,39 @@
 class SelectionServiceClass {
     constructor() {
-        this.selected = []
+        this.selected = [];
+        this.onSelectedChangeFuncs = [];
     }
 
     addToSelected = (thing) => {
-        console.log("Add to selected", thing)
         if (this.selected.includes(thing)) {
-            console.log("contains")
             return;
         }
         this.selected.push(thing);
+        this._updateSubscribers();
     }
 
     removeFromSelected = (thing) => {
         this.selected = this.selected.filter(select => select !== thing);
+        this._updateSubscribers();
     }
 
     filterSelectedOn = (filterFunc) => {
         this.selected = this.selected.filter(select => filterFunc(select));
+        this._updateSubscribers();
+    }
+
+    subscribeToSelected = (onSelectedChangeFunc) => {
+        this.onSelectedChangeFuncs.push(onSelectedChangeFunc)
+    }
+
+    unsubscribeFromSelected = (onSelectedChangeFunc) => {
+        this.onSelectedChangeFuncs = this.onSelectedChangeFuncs.filter(func => func !== onSelectedChangeFunc);
+    }
+
+    _updateSubscribers = () => {
+        this.onSelectedChangeFuncs.forEach(func => {
+            func(this.selected);
+        });
     }
 }
 

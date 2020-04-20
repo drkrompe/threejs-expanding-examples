@@ -1,0 +1,20 @@
+.gui-selection {
+    .gui-top {
+        display: flex;
+
+        .gui-right {
+            width: 220px;
+            background-color: beige;
+            border-left: 1px solid black;
+            border-top: 1px solid black;
+            border-right: 1px solid black;
+        }
+    }
+
+    .gui-bottom {
+        height: 200px;
+        max-width: 920px;
+        background-color: beige;
+        border: 1px solid black;
+    }
+}

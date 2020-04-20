@@ -8,7 +8,8 @@ export default class Unit {
         unitTextureRows = 1,
         unitName = 'unit',
         selectable = false,
-        selectionIndicatorYOffset = -0.25
+        selectionIndicatorYOffset = -0.25,
+        team = 0
     ) {
         this.dilsprite = new DilSprite(
             unitTexture,
@@ -20,6 +21,8 @@ export default class Unit {
         );
         this.selectable = selectable;
         this.dilsprite.sprite3dObject.self = this;
+        this.className = 'Unit';
+        this.team = team;
     }
 
     onTick = (timeDelta) => {

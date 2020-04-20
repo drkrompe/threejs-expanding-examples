@@ -1,8 +1,13 @@
 import React from 'react';
 import ClassNames from '../../utils/ClassNames';
 import MouseService from '../../services/MouseService';
+import Stats from 'stats.js';
 
 require('./SimpleRenderer.scss');
+
+var stats = new Stats();
+stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
 
 export default class SimpleRenderer extends React.Component {
 
@@ -41,10 +46,12 @@ export default class SimpleRenderer extends React.Component {
     }
 
     animate = (now) => {
+        stats.begin()
         this.props.updateFunctions && this.props.updateFunctions.forEach(func => {
             func(now);
         });
         this.props.updateFunction && this.props.updateFunction(now);
+        stats.end();
 
         requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);

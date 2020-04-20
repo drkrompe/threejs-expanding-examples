@@ -5,10 +5,13 @@ import SceneService from '../../../services/SceneService';
 import CameraService from '../../../services/CameraService';
 import DMath from '../../../helpers/DMath';
 import MovementHelper from '../../../helpers/MovementHelper';
+import SelectionService from '../../../services/SelectionService';
+import TeamService from '../../../services/TeamService';
 
 export default class Human extends Unit {
-    constructor(size = 0.15) {
-        super(HumanTexture, 3, 1, 'human', true, -0.45);
+    constructor(team = 0, size = 0.15) {
+        super(HumanTexture, 3, 1, 'human', true, -0.45, team);
+
         this.changeFrameTime = 0.25;
         this.timeToNextTextureFrame = this.changeFrameTime;
         this.offset = 0;
@@ -21,20 +24,50 @@ export default class Human extends Unit {
         this.divergeFactorStart = 0.005;
         this.divergeFactorMax = 0.05
         this.divergeFactor = this.divergeFactorStart;
-        this.life = 100
+
+        // Faction Data
+        this.team = team;
+
+        // Subscribables
+        this.onLifeChangeFuncs = [];
+
+        // Unit Stats
+        this.className = 'Human';
+        this.lifeMax = 100;
+        this.life = this.lifeMax;
+
+        // performanceHelpers
+        this.tickLifeChange = 0
+        this.occasionalTime = 2
+        this.lastOccasional = 0
+
+        this.updateEveryFifthReset = 75
+        this.updateEveryFifth = 0
+
+        this.updateEveryHalfSecReset = 0.5
+        this.updateEveryHalfSec = this.updateEveryHalfSecReset
     }
 
     onTick = (timeDelta) => {
+
         this._atTargetLocation();
         this._moveTowardTargetLocation(timeDelta);
         this._updateTexture(timeDelta);
         this._moveAwayFromOtherZergOnLocation();
+        this._onTickUpdateLife();
+        this.updateEveryHalfSec -= timeDelta
+        if (this.updateEveryHalfSec < 0) {
+            this._updateLifeChangeSubscribers();
+            this.updateEveryHalfSec = this.updateEveryHalfSecReset;
+        }
         this._lifeLessThan0Die();
     }
 
     _lifeLessThan0Die = () => {
-        if (this.life < 0) {
+        if (this.life <= 0) {
             SceneService.scene.remove(this.dilsprite.sprite3dObject)
+            SelectionService.removeFromSelected(this);
+            TeamService.teams[this.team].remove(this);
         }
     }
 
@@ -131,5 +164,31 @@ export default class Human extends Unit {
         if (currentLocation.x === this.targetLocation.x && currentLocation.y === this.targetLocation.y) {
             this.targetLocation = undefined;
         }
+    }
+
+    // External Functions
+    subscribeToLifeChange = (func) => {
+        this.onLifeChangeFuncs.push(func);
+    }
+
+    unsubscribeFromLifeChange = (func) => {
+        this.onLifeChangeFuncs = this.onLifeChangeFuncs.filter(otherFunc => otherFunc !== func);
+    }
+
+    _updateLifeChangeSubscribers = () => {
+        this.onLifeChangeFuncs.forEach(func => {
+            func(this.life);
+        });
+    }
+
+    // External Unit Updates
+    _onTickUpdateLife = () => {
+        this.life += this.tickLifeChange
+        this.tickLifeChange = 0;
+    }
+
+    // External Unit Updates
+    lifeChange = (changeAmount) => {
+        this.tickLifeChange += changeAmount;
     }
 }

@@ -8,6 +8,7 @@ import SpriteRenderer from './components/5-sprite-renderer/SpriteRenderer';
 import SpriteOrder from './components/5-sprite-order/SpriteOrder';
 import SelectionMovement from './components/6-selection-movement/SelectionMovement';
 import SelectionMovementAttack from './components/6-selection-movement-attack/SelectionMovementAttack';
+import GuiSelection from './components/7-gui-selection/GuiSelection';
 
 function App() {
 	CameraService.camera.position.z = -1;
@@ -15,7 +16,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<SelectionMovementAttack
+			<GuiSelection
 				renderer={RendererService.renderer}
 				camera={CameraService.camera}
 				scene={SceneService.scene}

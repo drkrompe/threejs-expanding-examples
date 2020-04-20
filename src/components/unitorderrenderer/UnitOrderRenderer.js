@@ -28,6 +28,7 @@ export default class UnitOrderRenderer extends React.Component {
             selectedUnits.forEach(unit => {
                 if (unit instanceof Unit) {
                     unit.targetLocation = Object.assign({}, MouseService.mouse);
+                    unit.action = 'move_to'
                     if (selectedUnits.length > 1) {
                         this.randomizePlusMinus(unit, 0.09);
                         if (selectedUnits.length > 10 && selectedUnits.length < 40) {

@@ -38,10 +38,6 @@ export default class MouseDragCaptureRenderer extends React.Component {
     }
 
     onMousePress = (event) => {
-        // MouseService.onMousePressFunctions && MouseService.onMousePressFunctions.forEach(func => {
-        //     func(event);
-        // })
-
         if (event.button !== 0) {
             return;
         }

@@ -6,75 +6,186 @@ import CameraService from '../../../services/CameraService';
 import MovementHelper from '../../../helpers/MovementHelper';
 import DMath from '../../../helpers/DMath';
 import Human from './Human';
+import TeamService from '../../../services/TeamService';
 
-
-
+const ZergActions = {
+    ATTACK: 'attack',
+    MOVE_TO: 'move_to',
+    WAITING: 'waiting'
+}
 
 export default class Zerg extends Unit {
-    constructor(selectable = true, size = 0.18) {
-        super(Zerglite, 10, 1, 'zerg', selectable);
+    constructor(team = 0, selectable = true, size = 0.18) {
+        super(Zerglite, 10, 1, 'zerg', selectable, -0.25, team);
+
         this.changeFrameTime = 0.18;
         this.timeToNextTextureFrame = this.changeFrameTime;
         this.offset = 0;
-        this.zergSpeed = 0.33;
         this.dilsprite.sprite3dObject.scale.x = size - 0.05;
         this.dilsprite.sprite3dObject.scale.y = size;
         this.dilsprite.sprite3dObject.self = this;
 
         this.raycaster = new THREE.Raycaster();
-        this.humanTarget = undefined;
 
         this.divergeFactorStart = 0.005;
         this.divergeFactor = this.divergeFactorStart;
 
+        // Faction Data
+        this.team = team;
+
+        // Action
+        this.action = ZergActions.WAITING;
+
+        this.attackTarget = undefined;
+
+        // Subscribables
+        this.onLifeChangeFuncs = [];
+
+        // Unit Stats
+        this.className = 'Zerg'
+        this.lifeMax = 100;
+        this.life = this.lifeMax;
         this.attackRange = 0.1
-        this.attackDamage = 1
+        this.attackDamage = 5
+        this.speed = 0.33;
+
+        // performanceHelpers
+        this.tickLifeChange = 0
+        this.occasionalTime = 1
+        this.lastOccasional = 0
+
+        // Attack timing
+        this.lastAttackTimeReset = 1
+        this.lastAttackTime = 0;
+
+        // UpdateTimers
+        this.updateEveryHalfSecReset = 0.5
+        this.updateEveryHalfSec = this.updateEveryHalfSecReset
     }
 
     onTick = (timeDelta) => {
-        this._checkHumanTargetIsAlive();
-        this._atTargetLocation();
-        this._moveTowardTargetLocation(timeDelta);
+
+        this.updateEveryHalfSec -= timeDelta
+        if (this.updateEveryHalfSec < 0) {
+            this._updateLifeChangeSubscribers();
+            this.updateEveryHalfSec = this.updateEveryHalfSecReset;
+        }
+
         this._updateTexture(timeDelta);
         this._moveAwayFromOtherUnitsOnLocation();
-        this._findNearestHumanTarget();
-        this._followHumanTarget();
-        this._attackTargetIfCloseEnough();
+        // Decision Tree
+        this._evaluate_self_action(timeDelta);
     }
 
-    _attackTargetIfCloseEnough = () => {
-        if (!this.humanTarget) {
+    _evaluate_self_action = (timeDelta) => {
+        switch (this.action) {
+            case ZergActions.WAITING:
+                this.openToFindTarget = true;
+                this._occasionally(timeDelta);
+                this._ifAttackTargetSwitchAttacking();
+                break;
+            case ZergActions.ATTACK:
+                this.openToFindTarget = false;
+                this._checkAttackTargetIsAlive();
+                this._followAttackTarget();
+                this._moveTowardTargetLocation(timeDelta);
+                this._attackTargetIfCloseEnough(timeDelta);
+                this._ifNoAttackTargetSwitchWaiting();
+                break;
+            case ZergActions.MOVE_TO:
+                this.openToFindTarget = false;
+                this._ifMoveToThenNoAttackTarget();
+                this._moveTowardTargetLocation(timeDelta);
+                this._atTargetLocation();
+                this._ifAtTargetLocationSwitchWaiting();
+                break;
+            default:
+        }
+    }
+
+    _ifMoveToThenNoAttackTarget() {
+        if (!this.attackTarget) {
             return;
         }
-        const diffX = this.humanTarget.dilsprite.sprite3dObject.position.x - this.dilsprite.sprite3dObject.position.x;
-        const diffY = this.humanTarget.dilsprite.sprite3dObject.position.y - this.dilsprite.sprite3dObject.position.y;
+        this.attackTarget = undefined;
+    }
+
+    _ifAtTargetLocationSwitchWaiting() {
+        if (this.targetLocation) {
+            return;
+        }
+        this.action = ZergActions.WAITING;
+    }
+
+    _ifNoAttackTargetSwitchWaiting() {
+        if (this.attackTarget) {
+            return;
+        };
+        this.targetLocation = undefined;
+        this.action = ZergActions.WAITING;
+    }
+
+    _ifAttackTargetSwitchAttacking() {
+        if (!this.attackTarget) {
+            return;
+        }
+        this.action = ZergActions.ATTACK;
+    }
+
+    _occasionally = (timeDelta) => {
+        this.lastOccasional -= timeDelta
+        if (this.lastOccasional > 0) {
+            return;
+        }
+        this.lastOccasional = this.occasionalTime;
+        this._findNearestOtherTeamTarget();
+    }
+
+    _attackTargetIfCloseEnough = (timeDelta) => {
+        this.lastAttackTime -= timeDelta;
+        if (!this.attackTarget) {
+            return;
+        }
+        if (this.lastAttackTime > 0) {
+            return;
+        }
+        
+        const diffX = this.attackTarget.dilsprite.sprite3dObject.position.x - this.dilsprite.sprite3dObject.position.x;
+        const diffY = this.attackTarget.dilsprite.sprite3dObject.position.y - this.dilsprite.sprite3dObject.position.y;
         const distanceToTarget = Math.sqrt(DMath.square(diffX) + DMath.square(diffY))
         if (distanceToTarget < this.attackRange) {
-            this.humanTarget.life -= this.attackDamage
+            this.lastAttackTime = this.lastAttackTimeReset;
+            this.attackTarget.lifeChange(-this.attackDamage);
         }
     }
 
-    _checkHumanTargetIsAlive = () => {
-        if (!this.humanTarget) {
+    _checkAttackTargetIsAlive = () => {
+        if (!this.attackTarget) {
             return;
         }
-        if (this.humanTarget.life > 0) {
+        if (this.attackTarget.life > 0) {
             return;
         }
-        this.humanTarget = undefined
+        this.attackTarget = undefined
     }
 
-    _findNearestHumanTarget = () => {
-        if (!this.humanTarget) {
-            const humanThings = SceneService.scene.children.filter(sceneElement => {
-                return sceneElement.self instanceof Human
+    _findNearestOtherTeamTarget = () => {
+        // THIS IS INTENSIVE OPERATION!!!
+        // Goal limit this search to happen only every so often
+        if (!this.openToFindTarget) {
+            return;
+        }
+        if (!this.attackTarget) {
+            const otherTeam = TeamService.teams[(this.team + 1) % 2];
+            const humanThings = otherTeam.things().filter(thing => {
+                return thing instanceof Human
             });
             if (humanThings.length === 0) {
                 return;
             }
             const foundHuman = humanThings.map((humanThing, index) => {
-                const diffX = humanThing.self.dilsprite.sprite3dObject.position.x - this.dilsprite.sprite3dObject.position.x;
-                const diffY = humanThing.self.dilsprite.sprite3dObject.position.y - this.dilsprite.sprite3dObject.position.y;
+                const diffX = humanThing.dilsprite.sprite3dObject.position.x - this.dilsprite.sprite3dObject.position.x;
+                const diffY = humanThing.dilsprite.sprite3dObject.position.y - this.dilsprite.sprite3dObject.position.y;
                 const distanceTo = Math.sqrt(DMath.square(diffX) + DMath.square(diffY))
                 return {
                     distanceTo,
@@ -86,19 +197,19 @@ export default class Zerg extends Unit {
                 } else {
                     return cur;
                 }
-            })
+            });
             if (foundHuman) {
-                this.humanTarget = foundHuman.humanThing.self
+                this.attackTarget = foundHuman.humanThing;
             }
         }
     }
 
-    _followHumanTarget = () => {
-        if (!this.humanTarget) {
+    _followAttackTarget = () => {
+        if (!this.attackTarget) {
             return;
         }
         if (!this.targetLocation) {
-            this.targetLocation = this.humanTarget.dilsprite.sprite3dObject.position
+            this.targetLocation = this.attackTarget.dilsprite.sprite3dObject.position
         }
     }
 
@@ -118,7 +229,6 @@ export default class Zerg extends Unit {
     }
 
     _moveTowardTargetLocation = (timeDelta) => {
-        window.debug && console.log("Move toward", this.targetLocation, this);
         if (!this.targetLocation) {
             return;
         }
@@ -126,7 +236,7 @@ export default class Zerg extends Unit {
             this.dilsprite.sprite3dObject.position,
             this.targetLocation,
             timeDelta,
-            this.zergSpeed
+            this.speed
         );
     }
 
@@ -202,4 +312,30 @@ export default class Zerg extends Unit {
             this.targetLocation = undefined;
         }
     }
+
+    _onTickUpdateLife = () => {
+        this.life += this.tickLifeChange
+    }
+
+    // External Functions
+    subscribeToLifeChange = (func) => {
+        this.onLifeChangeFuncs.push(func);
+    }
+
+    unsubscribeFromLifeChange = (func) => {
+        this.onLifeChangeFuncs = this.onLifeChangeFuncs.filter(otherFunc => otherFunc !== func);
+    }
+
+    _updateLifeChangeSubscribers = () => {
+        this.onLifeChangeFuncs.forEach(func => {
+            func(this.life);
+        });
+    }
+
+    // External Unit Updates
+    lifeChange = (changeAmount) => {
+        this.tickLifeChange += changeAmount;
+    }
+
+
 }
