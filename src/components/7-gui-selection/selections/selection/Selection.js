@@ -1,10 +1,12 @@
 import React from 'react';
 
+require('./Selection.scss');
+
 export default class Selection extends React.Component {
 
     constructor(props) {
         super(props);
-        this.lastColor = this.lifeValueToColor(this.props.life);
+        this.lastColor = this.lifeValueToColor(this.props.selected.life);
         this.state = {
             lifeColor: this.lastColor
         }

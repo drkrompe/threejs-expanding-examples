@@ -2,7 +2,7 @@ import React from 'react';
 import MouseDragCaptureRenderer from '../mousedragcapturerenderer/MouseDragCaptureRenderer';
 import SelectionService from '../../services/SelectionService';
 import MouseService from '../../services/MouseService';
-import Unit from '../6-selection-movement-attack/unit/Unit';
+import Unit from '../7-fighting-back/unit/Unit';
 
 export default class UnitOrderRenderer extends React.Component {
 

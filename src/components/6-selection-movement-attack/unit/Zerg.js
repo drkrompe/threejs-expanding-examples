@@ -64,7 +64,6 @@ export default class Zerg extends Unit {
     }
 
     onTick = (timeDelta) => {
-
         this.updateEveryHalfSec -= timeDelta
         if (this.updateEveryHalfSec < 0) {
             this._updateLifeChangeSubscribers();
@@ -83,6 +82,7 @@ export default class Zerg extends Unit {
                 this.openToFindTarget = true;
                 this._occasionally(timeDelta);
                 this._ifAttackTargetSwitchAttacking();
+                this._randomlyWander();
                 break;
             case ZergActions.ATTACK:
                 this.openToFindTarget = false;
@@ -100,6 +100,20 @@ export default class Zerg extends Unit {
                 this._ifAtTargetLocationSwitchWaiting();
                 break;
             default:
+        }
+    }
+
+    _randomlyWander = () => {
+        if (this.action !== ZergActions.WAITING) {
+            return;
+        }
+        if (Math.random() > 0.99) {
+            this.targetLocation = Object.assign({}, this.dilsprite.sprite3dObject.position)
+            const wanderDistMax = 0.1
+            this.targetLocation.x += (Math.random() * wanderDistMax - (wanderDistMax * 0.5))
+            this.targetLocation.y += (Math.random() * wanderDistMax - (wanderDistMax * 0.5))
+            this.action = ZergActions.MOVE_TO;
+            return true;
         }
     }
 
@@ -149,7 +163,7 @@ export default class Zerg extends Unit {
         if (this.lastAttackTime > 0) {
             return;
         }
-        
+
         const diffX = this.attackTarget.dilsprite.sprite3dObject.position.x - this.dilsprite.sprite3dObject.position.x;
         const diffY = this.attackTarget.dilsprite.sprite3dObject.position.y - this.dilsprite.sprite3dObject.position.y;
         const distanceToTarget = Math.sqrt(DMath.square(diffX) + DMath.square(diffY))

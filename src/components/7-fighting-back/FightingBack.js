@@ -1,11 +1,11 @@
 import React from 'react';
 import * as THREE from 'three';
+import TeamService from '../../services/TeamService';
+import Human from './unit/Human';
 import Zerg from './unit/Zerg';
 import UnitOrderRenderer from '../unitorderrenderer/UnitOrderRenderer';
-import Human from './unit/Human';
-import TeamService from '../../services/TeamService';
 
-export default class SelectionMovementAttack extends React.Component {
+export default class FightingBack extends React.Component {
 
     constructor(props) {
         super(props);
@@ -14,7 +14,7 @@ export default class SelectionMovementAttack extends React.Component {
 
     componentDidMount() {
         this.createXHuman(100)
-        this.createXZerg(100)
+        this.createXZerg(150)
         this.props.updateFunctions.push(this.onTick)
     }
 

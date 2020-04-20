@@ -5,7 +5,7 @@ import MouseService from '../../services/MouseService';
 import SceneService from '../../services/SceneService';
 import CameraService from '../../services/CameraService';
 import SelectionService from '../../services/SelectionService';
-import Unit from '../../components/6-selection-movement-attack/unit/Unit';
+import Unit from '../../components/7-fighting-back/unit/Unit';
 
 export default class MouseDragCaptureRenderer extends React.Component {
 

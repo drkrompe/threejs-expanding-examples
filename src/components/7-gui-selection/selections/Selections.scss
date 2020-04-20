@@ -1,8 +1,17 @@
 .selection-list {
     display: flex;
+    justify-content: center;
     padding: 0;
     margin: 0;
-    background-color: honeydew;
+    background-color: #6a7152;
     list-style: none;
     flex-wrap: wrap;
+    max-height: 300px;
+    overflow-y: scroll;
+
+    &::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+        /* Chrome/Safari/Webkit */
+    }
 }

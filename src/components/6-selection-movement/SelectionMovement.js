@@ -80,27 +80,6 @@ export default class SelectionMovement extends React.Component {
         }
     }
 
-    // onDragRelease = (dragVerts) => {
-    //     const traceDist = 0.09
-    //     for (let x = dragVerts.topLeft.x; x < dragVerts.bottomRight.x; x += traceDist) {
-    //         for (let y = dragVerts.topLeft.y; y < dragVerts.bottomRight.y; y += traceDist) {
-    //             this.raycastForZergsAddToSelected({ x, y });
-    //         }
-    //     }
-    //     console.log(SelectionService.selected)
-    // }
-
-    // raycastForZergsAddToSelected = (position) => {
-    //     this.raycaster.setFromCamera(position, CameraService.camera);
-    //     this.raycaster.ray.direction.z = 1
-    //     const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
-    //     intersects.forEach(thing => {
-    //         const foundThing = this.zergs.find(zerg => zerg.sprite.sprite3dObject === thing.object)
-    //         foundThing && SelectionService.addToSelected(foundThing);
-    //         foundThing && foundThing.sprite.toggleIndicatorOpacity(true);
-    //     });
-    // }
-
     render() {
         return (
             <>

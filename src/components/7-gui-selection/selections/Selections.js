@@ -6,27 +6,6 @@ require('./Selections.scss');
 
 export default class Selections extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            selections: []
-        };
-    }
-
-    componentDidMount = () => {
-        SelectionService.subscribeToSelected(this.onSelectionChange);
-    }
-
-    componentWillUnmount = () => {
-        SelectionService.unsubscribeFromSelected(this.onSelectionChange);
-    }
-
-    onSelectionChange = (selections) => {
-        this.setState({
-            selections
-        });
-    }
-
     renderSelectedContainer = (selected) => {
         return (
             <li className='selected-container'>
@@ -38,7 +17,7 @@ export default class Selections extends React.Component {
     render() {
         return (
             <ul className='selection-list'>
-                {this.state.selections.map(selected => <Selection selected={selected} />)}
+                {this.props.selections.map(selected => <Selection selected={selected} />)}
             </ul>
         )
     }
