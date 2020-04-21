@@ -6,8 +6,8 @@
     background-color: #6a7152;
     list-style: none;
     flex-wrap: wrap;
-    max-height: 300px;
     overflow-y: scroll;
+    height: 70%;
 
     &::-webkit-scrollbar {
         width: 0px;

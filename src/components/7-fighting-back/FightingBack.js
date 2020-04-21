@@ -4,6 +4,7 @@ import TeamService from '../../services/TeamService';
 import Human from './unit/Human';
 import Zerg from './unit/Zerg';
 import UnitOrderRenderer from '../unitorderrenderer/UnitOrderRenderer';
+import KeyboardListenerRenderer from '../keyboardlistenerrenderer/KeyboardListenerRenderer';
 
 export default class FightingBack extends React.Component {
 
@@ -13,15 +14,15 @@ export default class FightingBack extends React.Component {
     }
 
     componentDidMount() {
-        this.createXHuman(100)
-        this.createXZerg(150)
+        this.createXHuman(200)
+        this.createXZerg(275)
         this.props.updateFunctions.push(this.onTick)
     }
 
     createXHuman = (x) => {
         for (let i = 0; i < x; i++) {
             const human = new Human(0);
-            human.dilsprite.sprite3dObject.position.x = Math.random() * 2 - 1
+            human.dilsprite.sprite3dObject.position.x = Math.random() * 4 - 2
             human.dilsprite.sprite3dObject.position.y = Math.random() * 2 - 1
             this.props.scene.add(human.dilsprite.sprite3dObject);
             TeamService.teams[0].add(human);
@@ -31,7 +32,7 @@ export default class FightingBack extends React.Component {
     createXZerg = (x) => {
         for (let i = 0; i < x; i++) {
             const zerg = new Zerg(1, true);
-            zerg.dilsprite.sprite3dObject.position.x = Math.random() * 2 - 1
+            zerg.dilsprite.sprite3dObject.position.x = Math.random() * 4 - 2
             zerg.dilsprite.sprite3dObject.position.y = Math.random() * 2 - 1
             this.props.scene.add(zerg.dilsprite.sprite3dObject);
             TeamService.teams[1].add(zerg);
@@ -48,7 +49,7 @@ export default class FightingBack extends React.Component {
     render() {
         return (
             <>
-                <UnitOrderRenderer {...this.props} />
+                <KeyboardListenerRenderer {...this.props} />
             </>
         );
     }

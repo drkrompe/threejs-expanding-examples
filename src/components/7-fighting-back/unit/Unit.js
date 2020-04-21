@@ -6,6 +6,7 @@ import TeamService from '../../../services/TeamService';
 import DMath from '../../../helpers/DMath';
 import MovementHelper from '../../../helpers/MovementHelper';
 import CameraService from '../../../services/CameraService';
+import MouseService from '../../../services/MouseService';
 
 export default class Unit {
 
@@ -59,7 +60,7 @@ export default class Unit {
 
         // performanceHelpers
         this.tickLifeChange = 0;
-        this.occasionalTime = 1;
+        this.occasionalTime = 0.5;
         this.lastOccasional = 0;
 
         // Attack timing
@@ -205,10 +206,14 @@ export default class Unit {
     }
 
     _moveAwayFromOtherUnitsOnLocation = () => {
+        const unitPositionCameraRelativeX = this.dilsprite.sprite3dObject.position.x - CameraService.camera.position.x;
+        const unitPositionCameraRelativeY = this.dilsprite.sprite3dObject.position.y - CameraService.camera.position.y;
+
         this.raycaster.setFromCamera(
-            this.dilsprite.sprite3dObject.position,
+            { x: unitPositionCameraRelativeX * 0.5, y: unitPositionCameraRelativeY },
             CameraService.camera
-        )
+        );
+
         this.raycaster.ray.direction.z = 1
         const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
         const others = intersects.filter(thing => thing.object.self !== this && thing.object.self instanceof Unit);

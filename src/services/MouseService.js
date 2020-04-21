@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import CameraService from './CameraService';
+import { Camera } from 'three';
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+let canvas;
 
 const getOffset = (el) => {
     const rect = el.getBoundingClientRect();
@@ -14,10 +17,19 @@ const getOffset = (el) => {
 }
 
 const onMouseMove = (event) => {
-    const canvas = document.getElementById('canvas');
+    if (!canvas) {
+        canvas = document.getElementById('canvas');
+    }
     const canvasData = getOffset(canvas);
-    mouse.x = ((event.clientX - canvasData.left) / canvasData.width) * 2 - 1;
-    mouse.y = -1 * ((event.clientY - canvasData.top) / canvasData.height) * 2 + 1;
+    // Convert Mouse Position to Relative Camera position
+    // X [-2, 2] left->right
+    // Y [1, -1] top->bottom
+    mouse.x = ((event.clientX - canvasData.left) / canvasData.width) * 4 - 2 + CameraService.camera.position.x;
+    mouse.y = -1 * ((event.clientY - canvasData.top) / canvasData.height) * 2 + 1 + CameraService.camera.position.y;
+
+    // mouse.x = ((event.clientX - canvasData.left) / canvasData.width) * 2 - 1;
+    // mouse.y = -1 * ((event.clientY - canvasData.top) / canvasData.height) * 2 + 1;
+
     onMouseMoveFunctions.forEach(func => {
         func(mouse);
     });

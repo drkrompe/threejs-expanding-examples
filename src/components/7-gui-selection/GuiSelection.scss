@@ -3,6 +3,7 @@
         display: flex;
 
         .gui-right {
+            max-height: 700px;
             width: 220px;
             background-color: beige;
             border-left: 1px solid black;
@@ -13,7 +14,7 @@
 
     .gui-bottom {
         height: 200px;
-        max-width: 920px;
+        max-width: 1620px;
         background-color: beige;
         border: 1px solid black;
     }

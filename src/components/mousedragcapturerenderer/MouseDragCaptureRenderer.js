@@ -116,17 +116,37 @@ export default class MouseDragCaptureRenderer extends React.Component {
     }
 
     onDragRelease = (dragVerts) => {
-        const traceDist = 0.09
+        const traceDist = 0.05
         for (let x = dragVerts.topLeft.x; x < dragVerts.bottomRight.x; x += traceDist) {
             for (let y = dragVerts.topLeft.y; y < dragVerts.bottomRight.y; y += traceDist) {
                 this.raycastForSelectableUnitsAddToSelected({ x, y });
+                window.debug.selectionRayTracing && this.debugRay({ x, y })
             }
         }
         console.log(SelectionService.selected)
     }
 
+    debugRay = (position) => {
+        const geom = new THREE.RingGeometry(1, 1.07, 32);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0xffff00,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 1
+        })
+        this.indicatorMesh = new THREE.Mesh(geom, material);
+        this.indicatorMesh.scale.x = 0.009
+        this.indicatorMesh.scale.y = 0.009
+        this.indicatorMesh.position.x = position.x
+        this.indicatorMesh.position.y = position.y
+        this.indicatorMesh.position.z = 1
+        SceneService.scene.add(this.indicatorMesh);
+    }
+
     raycastForSelectableUnitsAddToSelected = (position) => {
-        this.raycaster.setFromCamera(position, CameraService.camera);
+        this.raycaster.setFromCamera({ x: position.x / 2, y: position.y }, CameraService.camera);
+        // this.raycaster.ray.position.x = MouseService.mouse.x;
+        // this.raycaster.ray.position.y = MouseService.mouse.y;
         this.raycaster.ray.direction.z = 1
         const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
         intersects.forEach(thing => {

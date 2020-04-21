@@ -1,11 +1,6 @@
 import Unit from "./Unit";
 import HumanTexture from './Human.png';
 import DeadHumanTexture from './HumanDead.png';
-import SceneService from '../../../services/SceneService';
-import CameraService from '../../../services/CameraService';
-import DMath from '../../../helpers/DMath';
-import MovementHelper from '../../../helpers/MovementHelper';
-import TeamService from '../../../services/TeamService';
 
 const HumanActions = {
     ATTACK: 'attack',
@@ -37,6 +32,7 @@ export default class Human extends Unit {
         this.dilsprite.sprite3dObject.self = this;
         this.deadSprite.sprite3dObject.scale.x = size - 0.05;
         this.deadSprite.sprite3dObject.scale.y = size;
+        this.deadSprite.sprite3dObject.scale.z = 3;
         this.deadSprite.showTextureIndex(2)
 
         this.numberTextures = 3;

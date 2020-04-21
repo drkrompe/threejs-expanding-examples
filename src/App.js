@@ -12,8 +12,12 @@ import GuiSelection from './components/7-gui-selection/GuiSelection';
 import FightingBack from './components/7-fighting-back/FightingBack';
 
 function App() {
-	CameraService.camera.position.z = -1;
-	SceneService.scene.background = new THREE.Color(0x7dcd85)
+	// CameraService.camera.position.z = -1;
+	SceneService.scene.background = new THREE.Color(0x68a357)
+
+	window.debug = {
+		selectionRayTracing: false
+	}
 
 	return (
 		<div className="App">
