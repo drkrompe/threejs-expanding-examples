@@ -17,21 +17,7 @@ export default class KeyboardListenerRenderer extends React.Component {
     }
 
     onKeyDown = (event) => {
-        switch (event.key) {
-            case 'w':
-                CameraService.camera.position.y += 0.1;
-                break;
-            case 'a':
-                CameraService.camera.position.x += -0.1;
-                break;
-            case 's':
-                CameraService.camera.position.y += -0.1;
-                break;
-            case 'd':
-                CameraService.camera.position.x += 0.1;
-                break;
-            default:
-        }
+        
     }
 
     onKeyPress = (event) => {

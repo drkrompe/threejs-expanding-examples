@@ -16,7 +16,8 @@ function App() {
 	SceneService.scene.background = new THREE.Color(0x68a357)
 
 	window.debug = {
-		selectionRayTracing: false
+		selectionRayTracing: false,
+		mouseDebug: false,
 	}
 
 	return (

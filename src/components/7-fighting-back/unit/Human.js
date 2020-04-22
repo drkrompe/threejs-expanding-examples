@@ -71,7 +71,7 @@ export default class Human extends Unit {
                 this.openToFindTarget = true;
                 this._occasionally(timeDelta);
                 this._ifAttackTargetSwitchAttacking();
-                this._randomlyWander();
+                // this._randomlyWander();
                 break;
             case HumanActions.ATTACK:
                 this.openToFindTarget = false;

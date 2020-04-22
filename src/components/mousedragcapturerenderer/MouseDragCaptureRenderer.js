@@ -96,14 +96,17 @@ export default class MouseDragCaptureRenderer extends React.Component {
 
     renderMouseDragEnd = () => {
         // Get dragVerts and call release functions with them
-        const dragVerts = {};
+        const dragVerts = {
+            scaleX: this.dragPlane.scale.x,
+            scaleY: this.dragPlane.scale.y
+        };
         dragVerts.topLeft = {
             x: this.dragPlane.position.x - (this.dragPlane.scale.x / 2),
             y: this.dragPlane.position.y - (this.dragPlane.scale.y / 2)
         }
         dragVerts.bottomRight = {
             x: dragVerts.topLeft.x + this.dragPlane.scale.x,
-            y: dragVerts.topLeft.y + this.dragPlane.scale.y
+            y: dragVerts.topLeft.y + this.dragPlane.scale.y,
         };
 
         MouseService.onMouseDragReleaseFunctions.forEach(func => {
@@ -145,8 +148,9 @@ export default class MouseDragCaptureRenderer extends React.Component {
 
     raycastForSelectableUnitsAddToSelected = (position) => {
         this.raycaster.setFromCamera({ x: position.x / 2, y: position.y }, CameraService.camera);
-        // this.raycaster.ray.position.x = MouseService.mouse.x;
-        // this.raycaster.ray.position.y = MouseService.mouse.y;
+        this.raycaster.ray.origin.x = position.x;
+        this.raycaster.ray.origin.y = position.y;
+        this.raycaster.ray.origin.z = -0.5
         this.raycaster.ray.direction.z = 1
         const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
         intersects.forEach(thing => {

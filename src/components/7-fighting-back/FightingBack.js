@@ -3,8 +3,7 @@ import * as THREE from 'three';
 import TeamService from '../../services/TeamService';
 import Human from './unit/Human';
 import Zerg from './unit/Zerg';
-import UnitOrderRenderer from '../unitorderrenderer/UnitOrderRenderer';
-import KeyboardListenerRenderer from '../keyboardlistenerrenderer/KeyboardListenerRenderer';
+import CameraMovementRenderer from '../cameramovementrenderer/CameraMovementRenderer';
 
 export default class FightingBack extends React.Component {
 
@@ -14,8 +13,11 @@ export default class FightingBack extends React.Component {
     }
 
     componentDidMount() {
-        this.createXHuman(200)
-        this.createXZerg(275)
+        // this.createXHuman(200)
+        // this.createXZerg(275)
+        this.createWithPosition(new Human(0), { x: 0, y: 0 })
+        this.createWithPosition(new Human(0), { x: 0, y: 1 })
+        this.createWithPosition(new Human(0), { x: 0, y: 2 })
         this.props.updateFunctions.push(this.onTick)
     }
 
@@ -39,6 +41,13 @@ export default class FightingBack extends React.Component {
         }
     }
 
+    createWithPosition = (thing, position) => {
+        thing.dilsprite.sprite3dObject.position.x = position.x;
+        thing.dilsprite.sprite3dObject.position.y = position.y;
+        this.props.scene.add(thing.dilsprite.sprite3dObject);
+        TeamService.teams[0].add(thing);
+    }
+
     onTick = () => {
         const timeDelta = this.clock.getDelta();
         TeamService.teams.forEach(team => {
@@ -49,7 +58,7 @@ export default class FightingBack extends React.Component {
     render() {
         return (
             <>
-                <KeyboardListenerRenderer {...this.props} />
+                <CameraMovementRenderer {...this.props} />
             </>
         );
     }

@@ -17,7 +17,7 @@ export default class Selections extends React.Component {
     render() {
         return (
             <ul className='selection-list'>
-                {this.props.selections.map(selected => <Selection selected={selected} />)}
+                {this.props.selections.map((selected, index) => <Selection key={index} selected={selected} />)}
             </ul>
         )
     }

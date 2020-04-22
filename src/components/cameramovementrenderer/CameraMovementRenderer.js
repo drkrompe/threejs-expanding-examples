@@ -1,5 +1,6 @@
 import React from 'react';
-import MouseDragCaptureRenderer from "../mousedragcapturerenderer/MouseDragCaptureRenderer";
+import CameraService from '../../services/CameraService';
+import KeyboardListenerRenderer from '../keyboardlistenerrenderer/KeyboardListenerRenderer';
 
 
 export default class CameraMovementRenderer extends React.Component {
@@ -8,14 +9,46 @@ export default class CameraMovementRenderer extends React.Component {
         window.addEventListener('keydown', this.onKeyDown)
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this.onKeyDown)
+    }
+
     onKeyDown = (event) => {
-        console.log(event)
+        let move = false;
+        switch (event.key) {
+            case 'w':
+                CameraService.camera.position.y += 0.1;
+                move = true;
+                break;
+            case 'a':
+                CameraService.camera.position.x += -0.1;
+                move = true;
+                break;
+            case 's':
+                CameraService.camera.position.y += -0.1;
+                move = true;
+                break;
+            case 'd':
+                CameraService.camera.position.x += 0.1;
+                move = true;
+                break;
+            case 'q':
+                CameraService.camera.rotateZ(Math.PI / 10);
+                move = true;
+                break;
+            case 'e':
+                CameraService.camera.rotateZ(-Math.PI / 10);
+                move = true;
+                break;
+            default:
+        }
+        move && CameraService.camera.updateProjectionMatrix()
     }
 
     render() {
         return (
             <>
-                <MouseDragCaptureRenderer {...this.props} />
+                <KeyboardListenerRenderer {...this.props} />
             </>
         );
     }

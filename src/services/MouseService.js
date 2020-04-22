@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import CameraService from './CameraService';
 import { Camera } from 'three';
+import SceneService from './SceneService';
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -16,6 +17,26 @@ const getOffset = (el) => {
     };
 }
 
+// DEBUG
+let mouseDebug = undefined;
+const createDebugMouseAt = (position) => {
+    const geom = new THREE.RingGeometry(1, 1.07, 32);
+    const material = new THREE.MeshBasicMaterial({
+        color: 0xffff00,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 1
+    })
+    const indicatorMesh = new THREE.Mesh(geom, material);
+    indicatorMesh.scale.x = 0.05
+    indicatorMesh.scale.y = 0.05
+    indicatorMesh.position.x = position.x
+    indicatorMesh.position.y = position.y
+    indicatorMesh.position.z = 1
+    SceneService.scene.add(indicatorMesh);
+    mouseDebug = indicatorMesh;
+}
+
 const onMouseMove = (event) => {
     if (!canvas) {
         canvas = document.getElementById('canvas');
@@ -29,6 +50,15 @@ const onMouseMove = (event) => {
 
     // mouse.x = ((event.clientX - canvasData.left) / canvasData.width) * 2 - 1;
     // mouse.y = -1 * ((event.clientY - canvasData.top) / canvasData.height) * 2 + 1;
+
+    if (window.debug.mouseDebug) {
+        if (!mouseDebug) {
+            createDebugMouseAt(mouse)
+        }
+        mouseDebug.position.x = mouse.x;
+        mouseDebug.position.y = mouse.y;
+    }
+
 
     onMouseMoveFunctions.forEach(func => {
         func(mouse);
@@ -59,5 +89,6 @@ const MouseService = {
     onMouseMoveFunctions,
     onMouseDragReleaseFunctions
 };
+
 
 export default MouseService;
