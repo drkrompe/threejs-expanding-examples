@@ -1,6 +1,7 @@
 import React from 'react';
-import UnitOrderRenderer from '../unitorderrenderer/UnitOrderRenderer';
+import MoveOrderRenderer from '../moveorderrenderer/MoveOrderRenderer';
 import CameraService from '../../services/CameraService';
+import TeamService from '../../services/TeamService';
 
 export default class KeyboardListenerRenderer extends React.Component {
 
@@ -17,7 +18,7 @@ export default class KeyboardListenerRenderer extends React.Component {
     }
 
     onKeyDown = (event) => {
-        
+
     }
 
     onKeyPress = (event) => {
@@ -31,7 +32,7 @@ export default class KeyboardListenerRenderer extends React.Component {
     render() {
         return (
             <>
-                <UnitOrderRenderer {...this.props} />
+                <MoveOrderRenderer {...this.props} />
             </>
         )
     }

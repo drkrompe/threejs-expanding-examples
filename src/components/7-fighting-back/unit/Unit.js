@@ -197,7 +197,7 @@ export default class Unit {
         if (!this.targetLocation) {
             return;
         }
-        this.movementData = MovementHelper.moveToward(
+        this.movementData = MovementHelper.moveDilTowardPoint(
             this.dilsprite.sprite3dObject.position,
             this.targetLocation,
             timeDelta,

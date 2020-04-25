@@ -1,7 +1,7 @@
 import React from 'react';
 import * as THREE from 'three';
 import Zerg from './unit/Zerg';
-import UnitOrderRenderer from '../unitorderrenderer/UnitOrderRenderer';
+import MoveOrderRenderer from '../moveorderrenderer/MoveOrderRenderer';
 import Human from './unit/Human';
 import TeamService from '../../services/TeamService';
 
@@ -48,7 +48,7 @@ export default class SelectionMovementAttack extends React.Component {
     render() {
         return (
             <>
-                <UnitOrderRenderer {...this.props} />
+                <MoveOrderRenderer {...this.props} />
             </>
         );
     }

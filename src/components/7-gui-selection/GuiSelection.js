@@ -1,8 +1,8 @@
 import React from 'react';
-import SelectionMovementAttack from '../6-selection-movement-attack/SelectionMovementAttack';
 import SelectionService from '../../services/SelectionService';
 import Selections from './selections/Selections';
-import FightingBack from '../7-fighting-back/FightingBack';
+
+import CameraMovementRenderer from '../cameramovementrenderer/CameraMovementRenderer';
 
 
 require('./GuiSelection.scss');
@@ -37,7 +37,7 @@ export default class GuiSelection extends React.Component {
             <>
                 <div className='gui-selection'>
                     <div className='gui-top'>
-                        <FightingBack {...this.props} />
+                        <CameraMovementRenderer {...this.props} />
                         <div className='gui-right'>
                             <div>
                                 {first && first.className}
