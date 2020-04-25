@@ -1,39 +1,22 @@
-const moveToward = (currentPosition, targetPosition, delta, speed) => {
-    const xDiff = targetPosition.x - currentPosition.x;
-    const yDiff = targetPosition.y - currentPosition.y;
+import DistanceHelper from "./DistanceHelper";
+import Dilsprite from "../models/Dilsprite";
 
-    const distance = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff))
-
-    const denom = (Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)));
-    const unitX = Math.abs(xDiff / denom)
-    const unitY = Math.abs(yDiff / denom)
-
-    const willRet = {
-        moving: 'right'
+const moveDilTowardPoint = (dil = new Dilsprite(), toPoint = { x: 0, y: 0 }, deltaTime = 0, speed = 0) => {
+    if (!dil || !toPoint || deltaTime === undefined || deltaTime === null || speed === undefined || speed === null) {
+        console.error("Error: Unexpected Param is undefined or null", dil, toPoint, deltaTime, speed);
+        return;
     }
-
-    if (distance <= speed * delta) {
-        currentPosition.x = targetPosition.x;
-        currentPosition.y = targetPosition.y;
-        return willRet;
+    const distance = DistanceHelper.distanceBetweenPoints(dil.position, toPoint);
+    if (distance <= speed * deltaTime) {
+        dil.position.x = toPoint.x;
+        dil.position.y = toPoint.y;
+        return;
     }
-
-    if (xDiff > 0) {
-        currentPosition.x += (unitX * speed * delta)
-    } else {
-        willRet.moving = 'left'
-        currentPosition.x -= (unitX * speed * delta)
-    }
-
-    if (yDiff > 0) {
-        currentPosition.y += (unitY * speed * delta)
-    } else {
-        currentPosition.y -= (unitY * speed * delta)
-    }
-
-    return willRet;
-}
+    const unitDiff = DistanceHelper.unitDirectionFromPointToPoint(dil.position, toPoint);
+    dil.position.x += unitDiff.x * speed * deltaTime;
+    dil.position.y += unitDiff.y * speed * deltaTime;
+};
 
 export default {
-    moveToward
+    moveDilTowardPoint
 };
