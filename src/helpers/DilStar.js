@@ -67,8 +67,8 @@ const worldUnitVecToGridLocation = (worldUnitDirection = { x: 0, y: 0 }, gridSha
  */
 const worldPositionsToGridPositions = (from = { x: 0, y: 0 }, to = { x: 0, y: 0 }, gridShape = 5) => {
     const unitDirection = DistanceHelper.unitDirectionFromPointToPoint(from, to);
-    const fromPositionOnGrid = this.worldUnitToGridLocation(unitDirection, gridShape);
-    const toPositionOnGrid = this.worldUnitToGridLocation(
+    const fromPositionOnGrid = worldUnitVecToGridLocation(unitDirection, gridShape);
+    const toPositionOnGrid = worldUnitVecToGridLocation(
         Vec(
             unitDirection.x * -1,
             unitDirection.y * -1
