@@ -37,6 +37,7 @@ export default class Dilsprite extends THREE.Sprite {
     }
 
     animate = (timeDelta) => {
+        // console.log("animate", timeDelta, this.dilspriteData.textureInversionSettings)
         this.dilActionAnimation.animate(timeDelta);
         const textureCoordinate = this.dilActionAnimation.currentIndexTextureCoordinate(this.dilspriteData.textureInversionSettings);
         this.setTextureIndex(textureCoordinate);
@@ -48,8 +49,13 @@ export default class Dilsprite extends THREE.Sprite {
     }
 
     invertTexture = (invertTexture = { x: 1, y: 1 }) => {
-        this.material.map.repeat.x *= invertTexture.x;
-        this.material.map.repeat.y *= invertTexture.y;
+        // Check if Inversion needs to be changed
+        if ((this.dilspriteData.textureInversionSettings.xInversed) === (invertTexture.x < 0) && this.dilspriteData.textureInversionSettings.yInversed === (invertTexture.y < 0)) {
+            return;
+        }
+
+        this.material.map.repeat.x = invertTexture.x / this.dilspriteData.indexedTextureColumns;
+        this.material.map.repeat.y = invertTexture.y / this.dilspriteData.indexedTextureRows;
         if (invertTexture.x < 0) {
             this.material.map.offset.x = -invertTexture.x / this.dilspriteData.indexedTextureColumns;
         }

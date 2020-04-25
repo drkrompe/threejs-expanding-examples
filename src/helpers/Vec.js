@@ -1,3 +1,9 @@
+/**
+ * Create 2d or 3d vector
+ * @param {number} x number
+ * @param {number} y number
+ * @param {number?} z number
+ */
 function Vec(x, y, z) {
     const args = [...arguments];
     if (args.length === 2) {

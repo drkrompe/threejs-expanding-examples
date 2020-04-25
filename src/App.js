@@ -9,6 +9,7 @@ import Creature from './textures/creature/Creature.png';
 import MovingUnit from './models/unit/movingunit/MovingUnit';
 import Actions from './models/actions/Actions';
 import CommonDataModels from './components/8-common-data-models/CommonDataModels';
+import StarVisualizer from './components/8-star-boy/StarVisualizer';
 
 function App() {
 	SceneService.scene.background = new THREE.Color(0x68a357)
@@ -20,7 +21,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<CommonDataModels
+			<StarVisualizer
 				renderer={RendererService.renderer}
 				camera={CameraService.camera}
 				scene={SceneService.scene}
