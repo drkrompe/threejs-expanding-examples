@@ -5,7 +5,7 @@ import MouseService from '../../services/MouseService';
 import SceneService from '../../services/SceneService';
 import CameraService from '../../services/CameraService';
 import SelectionService from '../../services/SelectionService';
-import Unit from '../../components/7-fighting-back/unit/Unit';
+import Selectable from '../../models/Selectable';
 
 export default class MouseDragCaptureRenderer extends React.Component {
 
@@ -73,8 +73,8 @@ export default class MouseDragCaptureRenderer extends React.Component {
         this.props.scene.add(this.dragPlane);
 
         SelectionService.filterSelectedOn(selected => {
-            selected.dilsprite.toggleIndicatorOpacity(false);
-            return !selected instanceof Unit;
+            selected.toggleUnitSelectedTo(false);
+            return !selected instanceof Selectable;
         })
     }
 
@@ -153,10 +153,10 @@ export default class MouseDragCaptureRenderer extends React.Component {
         this.raycaster.ray.origin.z = -0.5
         this.raycaster.ray.direction.z = 1
         const intersects = this.raycaster.intersectObjects(SceneService.scene.children);
-        intersects.forEach(thing => {
-            if (thing.object.self instanceof Unit && thing.object.self.selectable) {
-                SelectionService.addToSelected(thing.object.self);
-                thing.object.self.dilsprite.toggleIndicatorOpacity(true);
+        intersects.forEach(intersected => {
+            if (intersected.object.self instanceof Selectable && intersected.object.self.selectable) {
+                SelectionService.addToSelected(intersected.object.self);
+                intersected.object.self.toggleUnitSelectedTo(true);
             }
         });
     }
