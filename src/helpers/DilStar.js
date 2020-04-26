@@ -46,8 +46,8 @@ const worldUnitVecToGridLocation = (worldUnitDirection = { x: 0, y: 0 }, gridSha
         y: normedUnit.y
     };
     return Vec(
-        Math.floor(invertedXNormedUnit.x * (gridShape - 1)),
-        Math.floor(invertedXNormedUnit.y * (gridShape - 1))
+        Math.floor(invertedXNormedUnit.x * gridShape),
+        Math.floor(invertedXNormedUnit.y * gridShape)
     );
 };
 
@@ -125,8 +125,8 @@ const targetWorldIsWithinGrid = (
     //       1 World Unit
 
     const gridDifference = Vec(
-        worldDifference.x * (ratioGridToWorld - 1),
-        worldDifference.y * (ratioGridToWorld - 1)
+        worldDifference.x * ratioGridToWorld,
+        worldDifference.y * ratioGridToWorld
     );
     const gridPosition = Vec(
         referenceGridPosition.x + Math.floor(gridDifference.x),

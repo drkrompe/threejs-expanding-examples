@@ -16,57 +16,45 @@ document.body.appendChild(starStats.dom);
 export default class StarVisualizer extends React.Component {
 
     componentDidMount() {
-        this.mapWidth = 10;
-        this.mapHeight = 10;
-        // this.mapStep = 0.1;
-        // this.mapXOffset = -1.95;
-        // this.mapYOffset = -0.958;
-        this.cornStarNodes = new Array(this.mapWidth * this.mapHeight);
-        // this.fillNodesMap();
+        this.gridShape = 11;
+        this.mapWidth = this.gridShape;
+        this.mapHeight = this.gridShape;
 
-        // starStats.begin()
-        // const graph = new AStar.Graph([
-        //     [1, 1, 1, 1, 1],
-        //     [1, 1, 1, 1, 1],
-        //     [1, 1, 1, 1, 1],
-        //     [1, 1, 1, 1, 1],
-        //     [1, 1, 1, 1, 1],
-        // ], { diagonal: true });
-        // const search = AStar.astar.search(graph, graph.grid[0][0], graph.grid[3][3], { heuristic: AStar.heuristics.diagonal })
-        // starStats.end();
+        // Renderable Nodes
+        this.nodes = new Array(this.gridShape * this.gridShape);
 
-        // Goal
-        // Take MovingUnit current Location
-        // 1. Convert to position in starGraph relative to target
-        /**
-         * [1, 1, 1, 1, 1]
-         * [T, 1, 1, 1, 1]
-         * [1, 1, 1, 1, 1]
-         * [1, 1, 1, 1, 1]
-         * [1, 1, 1, 1, S]
-         */
-        // - Target is nearest position within the "CUBE"
-        // - Self is positioned at opposite side of cube relative to target
-
-        // Capabilities needed
-        // 1.) Convert To/From World/Grid coordinates [DONE]
-        // 2.) Position Self and Target on Grid [DONEish -> target location needs to be cross checked upon move as only give relative direction]
-        // 3.) Determine a World To Grid Scale factor [DONE -> Make up 10 grid units in a world unit] => 10x10
-
-        this.buildGrid();
+        this.doSearchAndRender();
     }
 
-    // Demo 1 have thing go from 0,0 to 1,0
-    // Demo 2 have thing go from 0,0 to 1,0 around obstacles
+    doSearchAndRender = () => {
+        const gridShape = this.gridShape; // Controls large of an area is covered 
+        const ratioGridToWorld = 9; // Controls density of points
 
-    buildGrid = () => {
-        const gridShape = 5;
-        const ratioGridToWorld = 5;
-        console.log("Search covers worldspace", gridShape * ratioGridToWorld);
-
+        // Test
         const fromPosition = Vec(0, 0);
-        const toPosition = Vec(1, 0);
+        const toPosition = Vec(-1, -0.5);
 
+        // Render Test Position
+        const renderableFrom = new RenderableNode(fromPosition, true, Vec(0.1, 0.1));
+        renderableFrom.mesh.material.color = 0x000000;
+        renderableFrom.mesh.material.opacity = 0.5;
+        const renderableTo = new RenderableNode(toPosition, true, Vec(0.05, 0.05));
+        renderableTo.mesh.material.color = 0x000000;
+        renderableTo.mesh.material.opacity = 0.5;
+        renderableTo.mesh.rotateZ(Math.PI / 4)
+        this.props.scene.add(renderableFrom.mesh);
+        this.props.scene.add(renderableTo.mesh);
+        // End Render Test Position
+
+        // ========================================== Start
+        // Find Start and End search point reference
+        // - Need to have position loss-less way of figuring out what
+        //   grid a world point is. 
+        //   * Possible solution would be an upgrade to data structure
+        //     for storing grid such that world coordinate points are
+        //     stored as well.
+        // - Pathing search should attempt to path using Vague grid positions
+        //   unit unit is pathed to containing grid, then do final complete pathing.
         const startAndEndReferences = this.getStartAndEndReferences(
             gridShape,
             ratioGridToWorld,
@@ -74,7 +62,7 @@ export default class StarVisualizer extends React.Component {
             toPosition
         );
 
-        console.log("Grid References | From ", startAndEndReferences.from, "To", startAndEndReferences.to);
+        console.log("calced grid from and to", startAndEndReferences)
 
         const graphArray = [];
         for (let y = 0; y < gridShape; y++) {
@@ -84,12 +72,11 @@ export default class StarVisualizer extends React.Component {
             }
             graphArray.push(subArray);
         }
-        console.log("Array Shape", graphArray.length, "by", graphArray[0].length)
         const graph = new AStar.Graph(graphArray, { diagonal: true });
-        console.log("start graph", graph)
 
         const startGrid = startAndEndReferences.from;
         const endGrid = startAndEndReferences.to;
+        // ========================================= End
 
         // Draw Nodes on Graph to be considered
         graph.nodes.forEach(node => {
@@ -104,35 +91,36 @@ export default class StarVisualizer extends React.Component {
         const search = AStar.astar.search(graph, graph.grid[startGrid.x][startGrid.y], graph.grid[endGrid.x][endGrid.y], { heuristic: AStar.heuristics.diagonal })
         console.log("Search result", search);
 
+        // Render Path
         search.forEach(node => {
             const mesh = this.getNodesElement(node.x, node.y);
-            console.log("mesh", mesh.material)
-            // mesh.material.opacity = 0;
-            mesh.position.x+=1
-            // mesh.material.color = 'red'
+            mesh.rotateZ(Math.PI / 4);
+            mesh.scale.x = 1.5;
+            mesh.scale.y = 1.5;
+            mesh.material.color = 0x000000;
+            mesh.material.opacity = 0.5;
         })
     }
 
     getStartAndEndReferences = (gridShape, ratioGridToWorld, fromPosition, toPosition) => {
         const gridPositions = DilStar.worldPositionsToGridPositions(fromPosition, toPosition, gridShape);
-        console.log("Grid References | From ", gridPositions.from, "To", gridPositions.to);
-
         const inGrid = DilStar.targetWorldIsWithinGrid(toPosition, gridPositions.from, fromPosition, ratioGridToWorld, gridShape)
-        console.log("Target is within Grid?", inGrid);
+
         if (inGrid) {
             gridPositions.to = inGrid;
         }
+
         return gridPositions;
     }
 
     nodeToRenderable = (node) => {
-        return new RenderableNode(Vec(node.x, node.y), node.weight, 0.1, 0.1);
+        return new RenderableNode(Vec(node.x, node.y), true, Vec(0.02, 0.02));
     }
 
     fillNodesMap = () => {
         for (let y = 0; y < this.mapHeight; y++) {
             for (let x = 0; x < this.mapWidth; x++) {
-                const renderableNode = new RenderableNode(Vec(x * this.mapStep + this.mapXOffset, y * this.mapStep + this.mapYOffset), true, Vec(0.09, 0.09));
+                const renderableNode = new RenderableNode(Vec(x * this.mapStep + this.mapXOffset, y * this.mapStep + this.mapYOffset), true, Vec(0.009, 0.009));
                 this.setNodesElement(x, y, renderableNode);
                 SceneService.scene.add(renderableNode.mesh);
             }
@@ -140,11 +128,11 @@ export default class StarVisualizer extends React.Component {
     }
 
     setNodesElement = (col, row, value) => {
-        this.cornStarNodes[this.mapWidth * row + col] = value;
+        this.nodes[this.mapWidth * row + col] = value;
     }
 
     getNodesElement = (col, row) => {
-        return this.cornStarNodes[this.mapWidth * row + col]
+        return this.nodes[this.mapWidth * row + col]
     }
 
     render() {
