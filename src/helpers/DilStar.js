@@ -41,13 +41,17 @@ const worldUnitVecToGridLocation = (worldUnitDirection = { x: 0, y: 0 }, gridSha
         y: (worldUnitDirection.y + 1) / 2
     }
 
+    console.log("worldUnit", worldUnitDirection, "normedUnit", normedUnit)
+
     const invertedXNormedUnit = {
         x: 1 - normedUnit.x,
         y: normedUnit.y
     };
+    const gridX = Math.floor(invertedXNormedUnit.x * gridShape);
+    const gridY = Math.floor(invertedXNormedUnit.y * gridShape);
     return Vec(
-        Math.floor(invertedXNormedUnit.x * gridShape),
-        Math.floor(invertedXNormedUnit.y * gridShape)
+        gridX === gridShape ? gridShape - 1 : gridX,
+        gridY === gridShape ? gridShape - 1 : gridY
     );
 };
 
@@ -75,6 +79,9 @@ const worldPositionsToGridPositions = (from = { x: 0, y: 0 }, to = { x: 0, y: 0 
         ),
         gridShape
     );
+
+    console.log("toPositionOnGrid", toPositionOnGrid)
+
     return {
         from: fromPositionOnGrid,
         to: toPositionOnGrid
@@ -150,10 +157,27 @@ const targetWorldIsWithinGrid = (
     else return gridPosition;
 };
 
+/**
+ * 
+ * @param {Vec} fromPositionWorld 
+ * @param {Vec} toPositionWorld 
+ * @param {number} gridShape 
+ * @param {number} ratioGridToWorld 
+ */
+const getStartAndEndGridPositions = (fromPositionWorld = { x: 0, y: 0 }, toPositionWorld = { x: 0, y: 0 }, gridShape = 1, ratioGridToWorld = 1) => {
+    const gridPositions = worldPositionsToGridPositions(fromPositionWorld, toPositionWorld, gridShape);
+    const inGrid = targetWorldIsWithinGrid(toPositionWorld, gridPositions.from, fromPositionWorld, ratioGridToWorld, gridShape);
+    if (inGrid) {
+        gridPositions.to = inGrid;
+    }
+    return gridPositions;
+}
+
 export default {
     worldPositionsToGridPositions,
     worldUnitVecToGridUnitVec,
     worldUnitVecToGridLocation,
     gridPositionToWorldPosition,
-    targetWorldIsWithinGrid
+    targetWorldIsWithinGrid,
+    getStartAndEndGridPositions
 };

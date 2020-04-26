@@ -2,109 +2,24 @@ import React from 'react';
 import * as THREE from 'three';
 import GuiSelection from '../7-gui-selection/GuiSelection';
 import Vec from '../../helpers/Vec';
-import SceneService from '../../services/SceneService';
 import AStar from '../../helpers/AStar';
 import DilStar from '../../helpers/DilStar';
 
 export default class StarVisualizer extends React.Component {
 
     componentDidMount() {
-        this.gridShape = 17;
+        this.gridShape = 30;
+        this.ratioGridToWorld = 17;
         this.mapWidth = this.gridShape;
         this.mapHeight = this.gridShape;
 
         // Renderable Nodes
         this.nodes = new Array(this.gridShape * this.gridShape);
 
-        this.doSearchAndRender();
-    }
-
-    doSearchAndRender = () => {
-        const gridShape = this.gridShape; // Controls large of an area is covered 
-        const ratioGridToWorld = 17; // Controls density of points
-
-        // Test
         const fromPosition = Vec(0, 0);
-        const toPosition = Vec(-1, -0.5);
+        const toPosition = Vec(0.5, 0.5);
 
-        // Render Test Position
-        const renderableFrom = new RenderableNode(fromPosition, true, Vec(0.1, 0.1));
-        renderableFrom.mesh.material.color = 0x000000;
-        renderableFrom.mesh.material.opacity = 0.5;
-        const renderableTo = new RenderableNode(toPosition, true, Vec(0.05, 0.05));
-        renderableTo.mesh.material.color = 0x000000;
-        renderableTo.mesh.material.opacity = 0.5;
-        renderableTo.mesh.rotateZ(Math.PI / 4)
-        this.props.scene.add(renderableFrom.mesh);
-        this.props.scene.add(renderableTo.mesh);
-        // End Render Test Position
-
-        // ========================================== Start
-        // Find Start and End search point reference
-        // - Need to have position loss-less way of figuring out what
-        //   grid a world point is. 
-        //   * Possible solution would be an upgrade to data structure
-        //     for storing grid such that world coordinate points are
-        //     stored as well.
-        // - Pathing search should attempt to path using Vague grid positions
-        //   unit unit is pathed to containing grid, then do final complete pathing.
-        const startAndEndReferences = this.getStartAndEndReferences(
-            gridShape,
-            ratioGridToWorld,
-            fromPosition,
-            toPosition
-        );
-        const graphArray = [];
-        for (let y = 0; y < gridShape; y++) {
-            const subArray = [];
-            for (let x = 0; x < gridShape; x++) {
-                // subArray.push(1);
-                subArray.push(Math.random() > 0.2 ? 1 : 0);
-            }
-            graphArray.push(subArray);
-        }
-        const graph = new AStar.Graph(graphArray, { diagonal: true });
-
-        const startGrid = startAndEndReferences.from;
-        const endGrid = startAndEndReferences.to;
-        // ========================================= End
-
-        // Draw Nodes on Graph to be considered
-        graph.nodes.forEach(node => {
-            const mesh = this.nodeToRenderable(node).mesh;
-            const worldPosition = DilStar.gridPositionToWorldPosition(Vec(node.x, node.y), startGrid, fromPosition, ratioGridToWorld)
-            mesh.position.x = worldPosition.x;
-            mesh.position.y = worldPosition.y;
-            this.props.scene.add(mesh);
-            this.setNodesElement(node.x, node.y, { mesh, traversable: node.weight });
-        });
-
-        const search = AStar.astar.search(graph, graph.grid[startGrid.x][startGrid.y], graph.grid[endGrid.x][endGrid.y], { heuristic: AStar.heuristics.diagonal })
-
-        // Render Path
-        search.forEach(node => {
-            const mesh = this.getNodesElement(node.x, node.y).mesh;
-            mesh.rotateZ(Math.PI / 4);
-            mesh.scale.x = 1.5;
-            mesh.scale.y = 1.5;
-            mesh.material.color = 0x000000;
-            mesh.material.opacity = 0.5;
-        })
-    }
-
-    getStartAndEndReferences = (gridShape, ratioGridToWorld, fromPosition, toPosition) => {
-        const gridPositions = DilStar.worldPositionsToGridPositions(fromPosition, toPosition, gridShape);
-        const inGrid = DilStar.targetWorldIsWithinGrid(toPosition, gridPositions.from, fromPosition, ratioGridToWorld, gridShape)
-
-        if (inGrid) {
-            gridPositions.to = inGrid;
-        }
-
-        return gridPositions;
-    }
-
-    nodeToRenderable = (node) => {
-        return new RenderableNode(Vec(node.x, node.y), node.weight, Vec(0.02, 0.02));
+        this.doSearchAndRender(fromPosition, toPosition, this.gridShape, this.ratioGridToWorld);
     }
 
     setNodesElement = (col, row, value) => {
@@ -113,6 +28,94 @@ export default class StarVisualizer extends React.Component {
 
     getNodesElement = (col, row) => {
         return this.nodes[this.mapWidth * row + col]
+    }
+
+    doSearchAndRender = (fromPosition = { x: 0, y: 0 }, toPosition = { x: 0, y: 0 }, gridShape = 11, ratioGridToWorld = 11) => {
+        // ==========================================
+        // 1. Find Start and End search point reference
+        const startAndEndReferences = DilStar.getStartAndEndGridPositions(
+            fromPosition,
+            toPosition,
+            gridShape,
+            ratioGridToWorld,
+        );
+
+        const startGrid = startAndEndReferences.from;
+        const endGrid = startAndEndReferences.to;
+
+        // ==========================================
+        // 2. Create Graph
+        const graphArray = [];
+        for (let y = 0; y < gridShape; y++) {
+            const subArray = [];
+            for (let x = 0; x < gridShape; x++) {
+                if (startGrid.x === y && startGrid.y === x) {
+                    subArray.push(1);
+                } else if (endGrid.x === y && endGrid.y === x) {
+                    subArray.push(1);
+                } else {
+                    subArray.push(Math.random() > 0.55 ? 1 : 0);
+                }
+            }
+            graphArray.push(subArray);
+        }
+        const graph = new AStar.Graph(graphArray, { diagonal: true });
+
+        // ==========================================
+        // 3. Perform Search
+        console.log(graph, endGrid)
+        const startNode = graph.grid[startGrid.x][startGrid.y];
+        const endNode = graph.grid[endGrid.x][endGrid.y];
+        const searchResultArray = AStar.astar.search(
+            graph,
+            startNode,
+            endNode,
+            { heuristic: AStar.astar.heuristics.diagonal }
+        )
+
+        // ==========================================
+        // DEBUG Drawing
+        this.drawStartAndEndPosition(fromPosition, toPosition);
+        this.drawGraphOnWorld(graph.nodes, startGrid, fromPosition, ratioGridToWorld);
+        this.drawSearchPath(searchResultArray);
+    }
+
+    drawStartAndEndPosition = (fromPositionWorld = { x: 0, y: 0 }, toPositionWorld = { x: 0, y: 0 }) => {
+        const renderableFrom = new RenderableNode(fromPositionWorld, true, Vec(0.1, 0.1));
+        renderableFrom.mesh.material.color = 0x000000;
+        renderableFrom.mesh.material.opacity = 0.5;
+        const renderableTo = new RenderableNode(toPositionWorld, true, Vec(0.05, 0.05));
+        renderableTo.mesh.material.color = 0x000000;
+        renderableTo.mesh.material.opacity = 0.5;
+        renderableTo.mesh.rotateZ(Math.PI / 4)
+        this.props.scene.add(renderableFrom.mesh);
+        this.props.scene.add(renderableTo.mesh);
+    }
+
+    drawGraphOnWorld = (graphNodes = [], referenceGrid = { x: 0, y: 0 }, referenceWorld = { x: 0, y: 0 }, ratioGridToWorld = 1) => {
+        graphNodes.forEach(node => {
+            const mesh = this.nodeToRenderable(node).mesh;
+            const worldPosition = DilStar.gridPositionToWorldPosition(Vec(node.x, node.y), referenceGrid, referenceWorld, ratioGridToWorld)
+            mesh.position.x = worldPosition.x;
+            mesh.position.y = worldPosition.y;
+            this.props.scene.add(mesh);
+            this.setNodesElement(node.x, node.y, { mesh, traversable: node.weight });
+        });
+    }
+
+    drawSearchPath = (nodes = []) => {
+        nodes.forEach(node => {
+            const mesh = this.getNodesElement(node.x, node.y).mesh;
+            mesh.rotateZ(Math.PI / 4);
+            mesh.scale.x = 1.5;
+            mesh.scale.y = 1.5;
+            mesh.material.color = 0x000000;
+            mesh.material.opacity = 0.5;
+        });
+    }
+
+    nodeToRenderable = (node) => {
+        return new RenderableNode(Vec(node.x, node.y), node.weight, Vec(0.02, 0.02));
     }
 
     render() {

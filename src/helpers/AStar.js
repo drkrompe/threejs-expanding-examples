@@ -129,6 +129,7 @@ var astar = {
             var D2 = Math.sqrt(2);
             var d1 = Math.abs(pos1.x - pos0.x);
             var d2 = Math.abs(pos1.y - pos0.y);
+            console.log("AT Star", D, D2, d1, d2)
             return (D * (d1 + d2)) + ((D2 - (2 * D)) * Math.min(d1, d2));
         }
     },
@@ -392,8 +393,5 @@ BinaryHeap.prototype = {
 
 export default {
     astar,
-    Graph,
-    heuristics: astar.heuristics,
+    Graph
 };
-
-// });
