@@ -40,9 +40,6 @@ const worldUnitVecToGridLocation = (worldUnitDirection = { x: 0, y: 0 }, gridSha
         x: (worldUnitDirection.x + 1) / 2,
         y: (worldUnitDirection.y + 1) / 2
     }
-
-    console.log("worldUnit", worldUnitDirection, "normedUnit", normedUnit)
-
     const invertedXNormedUnit = {
         x: 1 - normedUnit.x,
         y: normedUnit.y
@@ -79,9 +76,6 @@ const worldPositionsToGridPositions = (from = { x: 0, y: 0 }, to = { x: 0, y: 0 
         ),
         gridShape
     );
-
-    console.log("toPositionOnGrid", toPositionOnGrid)
-
     return {
         from: fromPositionOnGrid,
         to: toPositionOnGrid
@@ -139,14 +133,6 @@ const targetWorldIsWithinGrid = (
         referenceGridPosition.x + Math.floor(gridDifference.x),
         referenceGridPosition.y - Math.floor(gridDifference.y)
     );
-    if (false) {
-        console.log("referenceWorldPosition", referenceWorldPosition)
-        console.log("targetWorldPosition", targetWorldPosition)
-        console.log("worldDifference", worldDifference)
-        console.log("referenceGridPosition", referenceGridPosition)
-        console.log("gridDifference", gridDifference)
-        console.log("Calced Grid Position", gridPosition);
-    }
     // Check
     if (gridPosition.x < 0 || gridPosition.x > (gridShape - 1)) {
         return false;

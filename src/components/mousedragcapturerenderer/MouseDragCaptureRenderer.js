@@ -126,7 +126,6 @@ export default class MouseDragCaptureRenderer extends React.Component {
                 window.debug.selectionRayTracing && this.debugRay({ x, y })
             }
         }
-        console.log(SelectionService.selected)
     }
 
     debugRay = (position) => {

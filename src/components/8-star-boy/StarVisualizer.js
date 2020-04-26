@@ -2,120 +2,104 @@ import React from 'react';
 import * as THREE from 'three';
 import GuiSelection from '../7-gui-selection/GuiSelection';
 import Vec from '../../helpers/Vec';
-import AStar from '../../helpers/AStar';
-import DilStar from '../../helpers/DilStar';
+import PathFinder from './PathFinder';
+import MouseService from '../../services/MouseService';
+import Human from '../../prefab/human/Human';
+import TeamService from '../../services/TeamService';
+import Tickable from '../../models/Tickable';
+import SceneService from '../../services/SceneService';
+import CameraService from '../../services/CameraService';
+import Collidable from '../../models/Collidable';
 
 export default class StarVisualizer extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.pathFinder = new PathFinder(13, 10);
+        this.clock = new THREE.Clock();
+        this.raycaster = new THREE.Raycaster();
+    }
+
     componentDidMount() {
-        this.gridShape = 30;
-        this.ratioGridToWorld = 17;
-        this.mapWidth = this.gridShape;
-        this.mapHeight = this.gridShape;
-
-        // Renderable Nodes
-        this.nodes = new Array(this.gridShape * this.gridShape);
-
-        const fromPosition = Vec(0, 0);
-        const toPosition = Vec(0.5, 0.5);
-
-        this.doSearchAndRender(fromPosition, toPosition, this.gridShape, this.ratioGridToWorld);
+        window.addEventListener('mouseup', this.onMousePress);
+        this.props.updateFunctions.push(this.onTick);
+        this.createXHumans(100);
     }
 
-    setNodesElement = (col, row, value) => {
-        this.nodes[this.mapWidth * row + col] = value;
+    componentWillUnmount() {
+        window.removeEventListener('keypress', this.onKeyPress);
     }
 
-    getNodesElement = (col, row) => {
-        return this.nodes[this.mapWidth * row + col]
-    }
-
-    doSearchAndRender = (fromPosition = { x: 0, y: 0 }, toPosition = { x: 0, y: 0 }, gridShape = 11, ratioGridToWorld = 11) => {
-        // ==========================================
-        // 1. Find Start and End search point reference
-        const startAndEndReferences = DilStar.getStartAndEndGridPositions(
-            fromPosition,
-            toPosition,
-            gridShape,
-            ratioGridToWorld,
+    sampleFunc = (worldCoordinate = { x: 0, y: 0 }) => {
+        this.raycaster.setFromCamera(
+            { x: worldCoordinate.x, y: worldCoordinate.y },
+            CameraService.camera
         );
+        this.raycaster.ray.direction.z = 1
+        this.raycaster.ray.origin.x = worldCoordinate.x;
+        this.raycaster.ray.origin.y = worldCoordinate.y;
+        const intersect = this.raycaster
+            .intersectObjects(SceneService.scene.children)
 
-        const startGrid = startAndEndReferences.from;
-        const endGrid = startAndEndReferences.to;
+        const collidable = intersect.find(sceneThing => sceneThing.object.self instanceof Collidable);
+        return collidable ? 0 : 1
+    }
 
-        // ==========================================
-        // 2. Create Graph
-        const graphArray = [];
-        for (let y = 0; y < gridShape; y++) {
-            const subArray = [];
-            for (let x = 0; x < gridShape; x++) {
-                if (startGrid.x === y && startGrid.y === x) {
-                    subArray.push(1);
-                } else if (endGrid.x === y && endGrid.y === x) {
-                    subArray.push(1);
-                } else {
-                    subArray.push(Math.random() > 0.55 ? 1 : 0);
-                }
-            }
-            graphArray.push(subArray);
-        }
-        const graph = new AStar.Graph(graphArray, { diagonal: true });
+    onMousePress = (event) => {
+        const fromPosition = Vec(0, 0);
+        const toPosition = MouseService.mouse;
+        this.doSearchAndRender(fromPosition, toPosition);
+    }
 
-        // ==========================================
-        // 3. Perform Search
-        console.log(graph, endGrid)
-        const startNode = graph.grid[startGrid.x][startGrid.y];
-        const endNode = graph.grid[endGrid.x][endGrid.y];
-        const searchResultArray = AStar.astar.search(
-            graph,
-            startNode,
-            endNode,
-            { heuristic: AStar.astar.heuristics.diagonal }
-        )
-
-        // ==========================================
-        // DEBUG Drawing
+    doSearchAndRender = (fromPosition = { x: 0, y: 0 }, toPosition = { x: 0, y: 0 }) => {
+        this.pathFinder.debugClearScene();
+        const pathResult = this.pathFinder.findPath(fromPosition, toPosition, this.sampleFunc);
+        this.pathFinder.debugDrawPath(pathResult.searchResultWorld);
+        this.pathFinder.debugDrawSearchGrid();
         this.drawStartAndEndPosition(fromPosition, toPosition);
-        this.drawGraphOnWorld(graph.nodes, startGrid, fromPosition, ratioGridToWorld);
-        this.drawSearchPath(searchResultArray);
     }
 
     drawStartAndEndPosition = (fromPositionWorld = { x: 0, y: 0 }, toPositionWorld = { x: 0, y: 0 }) => {
-        const renderableFrom = new RenderableNode(fromPositionWorld, true, Vec(0.1, 0.1));
-        renderableFrom.mesh.material.color = 0x000000;
-        renderableFrom.mesh.material.opacity = 0.5;
-        const renderableTo = new RenderableNode(toPositionWorld, true, Vec(0.05, 0.05));
-        renderableTo.mesh.material.color = 0x000000;
-        renderableTo.mesh.material.opacity = 0.5;
-        renderableTo.mesh.rotateZ(Math.PI / 4)
-        this.props.scene.add(renderableFrom.mesh);
-        this.props.scene.add(renderableTo.mesh);
+        if (this.renderableFrom) {
+            this.props.scene.remove(this.renderableFrom.mesh);
+            this.renderableFrom = undefined;
+        }
+        if (this.renderableTo) {
+            this.props.scene.remove(this.renderableTo.mesh)
+            this.renderableTo = undefined;
+        }
+
+        this.renderableFrom = new RenderableNode(fromPositionWorld, true, Vec(0.1, 0.1));
+        this.renderableFrom.mesh.material.color = 0x000000;
+        this.renderableFrom.mesh.material.opacity = 0.5;
+        this.renderableTo = new RenderableNode(toPositionWorld, true, Vec(0.05, 0.05));
+        this.renderableTo.mesh.material.color = 0x000000;
+        this.renderableTo.mesh.material.opacity = 0.5;
+        this.renderableTo.mesh.rotateZ(Math.PI / 4)
+        this.props.scene.add(this.renderableFrom.mesh);
+        this.props.scene.add(this.renderableTo.mesh);
     }
 
-    drawGraphOnWorld = (graphNodes = [], referenceGrid = { x: 0, y: 0 }, referenceWorld = { x: 0, y: 0 }, ratioGridToWorld = 1) => {
-        graphNodes.forEach(node => {
-            const mesh = this.nodeToRenderable(node).mesh;
-            const worldPosition = DilStar.gridPositionToWorldPosition(Vec(node.x, node.y), referenceGrid, referenceWorld, ratioGridToWorld)
-            mesh.position.x = worldPosition.x;
-            mesh.position.y = worldPosition.y;
-            this.props.scene.add(mesh);
-            this.setNodesElement(node.x, node.y, { mesh, traversable: node.weight });
+    onTick = () => {
+        const timeDelta = this.clock.getDelta();
+        TeamService.teams.forEach(team => {
+            team.thingsArray.forEach(tickable => tickable instanceof Tickable && tickable.onTick(timeDelta));
         });
     }
 
-    drawSearchPath = (nodes = []) => {
-        nodes.forEach(node => {
-            const mesh = this.getNodesElement(node.x, node.y).mesh;
-            mesh.rotateZ(Math.PI / 4);
-            mesh.scale.x = 1.5;
-            mesh.scale.y = 1.5;
-            mesh.material.color = 0x000000;
-            mesh.material.opacity = 0.5;
-        });
+    createXHumans = (x) => {
+        for (let i = 0; i < x; i++) {
+            const human = this.createHumanAt(Vec(Math.random() * 2 - 1, Math.random() * 2 - 1));
+            SceneService.scene.add(human.dilsprite);
+            TeamService.teams[0].add(human);
+        }
     }
 
-    nodeToRenderable = (node) => {
-        return new RenderableNode(Vec(node.x, node.y), node.weight, Vec(0.02, 0.02));
+    createHumanAt = (position2d = { x: 0, y: 0 }) => {
+        const human = new Human(position2d, true, 0);
+        human.dilsprite.scale.x = 0.15
+        human.dilsprite.scale.y = 0.15
+        return human;
     }
 
     render() {

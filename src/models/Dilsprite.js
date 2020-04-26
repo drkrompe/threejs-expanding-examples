@@ -37,7 +37,6 @@ export default class Dilsprite extends THREE.Sprite {
     }
 
     animate = (timeDelta) => {
-        // console.log("animate", timeDelta, this.dilspriteData.textureInversionSettings)
         this.dilActionAnimation.animate(timeDelta);
         const textureCoordinate = this.dilActionAnimation.currentIndexTextureCoordinate(this.dilspriteData.textureInversionSettings);
         this.setTextureIndex(textureCoordinate);

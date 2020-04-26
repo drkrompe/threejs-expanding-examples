@@ -111,8 +111,6 @@ describe('dilstar', () => {
             const worldUnitDirection = DistanceHelper.unitDirectionFromPointToPoint(fromWorld, toWorld);
             const gridLocationReference = DilStar.worldUnitVecToGridLocation(worldUnitDirection, 5);
 
-            console.log(gridLocationReference)
-
             const targetOnGrid = DilStar.targetWorldIsWithinGrid(
                 toWorld,
                 gridLocationReference,
