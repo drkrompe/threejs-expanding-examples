@@ -52,11 +52,11 @@ export default class StarVisualizer extends React.Component {
     }
 
     doSearchAndRender = (fromPosition = { x: 0, y: 0 }, toPosition = { x: 0, y: 0 }) => {
-        this.pathFinder.debugClearScene();
-        const pathResult = this.pathFinder.findPath(fromPosition, toPosition, this.sampleFunc);
-        this.pathFinder.debugDrawPath(pathResult.searchResultWorld);
-        this.pathFinder.debugDrawSearchGrid();
-        this.drawStartAndEndPosition(fromPosition, toPosition);
+        // this.pathFinder.debugClearScene();
+        // const pathResult = this.pathFinder.findPath(fromPosition, toPosition, this.sampleFunc);
+        // this.pathFinder.debugDrawPath(pathResult.searchResultWorld);
+        // this.pathFinder.debugDrawSearchGrid();
+        // this.drawStartAndEndPosition(fromPosition, toPosition);
     }
 
     drawStartAndEndPosition = (fromPositionWorld = { x: 0, y: 0 }, toPositionWorld = { x: 0, y: 0 }) => {

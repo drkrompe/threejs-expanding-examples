@@ -2,6 +2,7 @@ import Unit from "../Unit";
 import Dilsprite from "../../Dilsprite";
 import Actions from "../../actions/Actions";
 import MovementHelper from "../../../helpers/MovementHelper";
+import PathFinderService, { PathSampleFuncCollidableIgnoring } from "../../../services/PathFinderService";
 
 export default class MovingUnit extends Unit {
     constructor(
@@ -39,6 +40,8 @@ export default class MovingUnit extends Unit {
     onTick(timeDelta) {
         super.onTick(timeDelta);
         this._ifActionIsMovingThenMoveTowardTargetLocation(timeDelta);
+        this._ifActionMovingAndNoPathThenPathFind();
+        this._ifActionMovingAndFoundPath();
     }
 
     _ifActionIsMovingThenMoveTowardTargetLocation = (timeDelta) => {
@@ -70,5 +73,42 @@ export default class MovingUnit extends Unit {
         this.onMoveCompleteFuncs.forEach(func => {
             func();
         });
+    }
+
+    _ifActionMovingAndNoPathThenPathFind = () => {
+        if (this.action !== Actions.MOVING) {
+            return;
+        }
+        if (!this.targetLocation) {
+            return;
+        }
+        if (this.foundPath) {
+            return;
+        }
+        const searchResult = PathFinderService.findPath(this.dilsprite.position, this.targetLocation, PathSampleFuncCollidableIgnoring(this));
+        this.foundPath = searchResult.searchResultWorld;
+        PathFinderService.debugClearScene();
+        PathFinderService.debugDrawPath(this.foundPath);
+        PathFinderService.debugDrawSearchGrid();
+
+        this.targetLocation = undefined;
+    }
+
+    _ifActionMovingAndFoundPath = () => {
+        if (this.action !== Actions.MOVING) {
+            return;
+        }
+        if (!this.foundPath) {
+            return;
+        }
+        if (this.targetLocation) {
+            return;
+        }
+        if (this.foundPath.length === 0) {
+            this.foundPath = undefined;
+            return;
+        }
+        this.targetLocation = this.foundPath.shift();
+        // this._ifFoundPathIsEmptyThenSetToUndefined();
     }
 }
