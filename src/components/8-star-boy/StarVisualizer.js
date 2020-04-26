@@ -4,19 +4,12 @@ import GuiSelection from '../7-gui-selection/GuiSelection';
 import Vec from '../../helpers/Vec';
 import SceneService from '../../services/SceneService';
 import AStar from '../../helpers/AStar';
-import Stats from 'stats.js';
 import DilStar from '../../helpers/DilStar';
-import DistanceHelper from '../../helpers/DistanceHelper';
-
-var starStats = new Stats();
-starStats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom 
-
-document.body.appendChild(starStats.dom);
 
 export default class StarVisualizer extends React.Component {
 
     componentDidMount() {
-        this.gridShape = 11;
+        this.gridShape = 17;
         this.mapWidth = this.gridShape;
         this.mapHeight = this.gridShape;
 
@@ -28,7 +21,7 @@ export default class StarVisualizer extends React.Component {
 
     doSearchAndRender = () => {
         const gridShape = this.gridShape; // Controls large of an area is covered 
-        const ratioGridToWorld = 9; // Controls density of points
+        const ratioGridToWorld = 17; // Controls density of points
 
         // Test
         const fromPosition = Vec(0, 0);
@@ -61,14 +54,12 @@ export default class StarVisualizer extends React.Component {
             fromPosition,
             toPosition
         );
-
-        console.log("calced grid from and to", startAndEndReferences)
-
         const graphArray = [];
         for (let y = 0; y < gridShape; y++) {
             const subArray = [];
             for (let x = 0; x < gridShape; x++) {
-                subArray.push(1);
+                // subArray.push(1);
+                subArray.push(Math.random() > 0.2 ? 1 : 0);
             }
             graphArray.push(subArray);
         }
@@ -85,15 +76,14 @@ export default class StarVisualizer extends React.Component {
             mesh.position.x = worldPosition.x;
             mesh.position.y = worldPosition.y;
             this.props.scene.add(mesh);
-            this.setNodesElement(node.x, node.y, mesh);
+            this.setNodesElement(node.x, node.y, { mesh, traversable: node.weight });
         });
 
         const search = AStar.astar.search(graph, graph.grid[startGrid.x][startGrid.y], graph.grid[endGrid.x][endGrid.y], { heuristic: AStar.heuristics.diagonal })
-        console.log("Search result", search);
 
         // Render Path
         search.forEach(node => {
-            const mesh = this.getNodesElement(node.x, node.y);
+            const mesh = this.getNodesElement(node.x, node.y).mesh;
             mesh.rotateZ(Math.PI / 4);
             mesh.scale.x = 1.5;
             mesh.scale.y = 1.5;
@@ -114,17 +104,7 @@ export default class StarVisualizer extends React.Component {
     }
 
     nodeToRenderable = (node) => {
-        return new RenderableNode(Vec(node.x, node.y), true, Vec(0.02, 0.02));
-    }
-
-    fillNodesMap = () => {
-        for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 0; x < this.mapWidth; x++) {
-                const renderableNode = new RenderableNode(Vec(x * this.mapStep + this.mapXOffset, y * this.mapStep + this.mapYOffset), true, Vec(0.009, 0.009));
-                this.setNodesElement(x, y, renderableNode);
-                SceneService.scene.add(renderableNode.mesh);
-            }
-        }
+        return new RenderableNode(Vec(node.x, node.y), node.weight, Vec(0.02, 0.02));
     }
 
     setNodesElement = (col, row, value) => {
@@ -163,7 +143,7 @@ class RenderableNode extends Node {
     _createMesh = () => {
         const geom = new THREE.PlaneGeometry(this.scale.x, this.scale.y, 2);
         const material = new THREE.MeshBasicMaterial({
-            color: 0xffff00,
+            color: this.traversable ? 0xffff00 : 0x000000,
             side: THREE.DoubleSide,
             transparent: true,
             opacity: 0.2,
