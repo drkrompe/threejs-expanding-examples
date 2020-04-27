@@ -17,6 +17,7 @@ function App() {
 	window.debug = {
 		selectionRayTracing: false,
 		mouseDebug: false,
+		pathFinder: false
 	}
 
 	return (

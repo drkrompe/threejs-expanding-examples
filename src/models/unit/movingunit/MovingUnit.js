@@ -87,9 +87,6 @@ export default class MovingUnit extends Unit {
         }
         const searchResult = PathFinderService.findPath(this.dilsprite.position, this.targetLocation, PathSampleFuncCollidableIgnoring(this));
         this.foundPath = searchResult.searchResultWorld;
-        PathFinderService.debugClearScene();
-        PathFinderService.debugDrawPath(this.foundPath);
-        PathFinderService.debugDrawSearchGrid();
 
         this.targetLocation = undefined;
     }
@@ -109,6 +106,5 @@ export default class MovingUnit extends Unit {
             return;
         }
         this.targetLocation = this.foundPath.shift();
-        // this._ifFoundPathIsEmptyThenSetToUndefined();
     }
 }

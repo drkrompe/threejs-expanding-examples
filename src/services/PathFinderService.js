@@ -94,6 +94,12 @@ class PathFinder {
             return worldPosition;
         })
 
+        if (window.debug.pathFinder) {
+            PathFinderService.debugClearScene();
+            PathFinderService.debugDrawPath(searchResultWorld);
+            PathFinderService.debugDrawSearchGrid();
+        }
+
         return {
             searchResultGrid: searchResultArray,
             searchResultWorld,

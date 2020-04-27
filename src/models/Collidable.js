@@ -38,6 +38,8 @@ export default class Collidable extends Tickable {
         );
 
         this.raycaster.ray.direction.z = 1
+        this.raycaster.ray.origin.x = this.dilsprite.position.x;
+        this.raycaster.ray.origin.y = this.dilsprite.position.y;
         this.raycaster
             .intersectObjects(SceneService.scene.children)
             .filter(sceneThing => sceneThing.object.self !== this && sceneThing.object.self instanceof Collidable)

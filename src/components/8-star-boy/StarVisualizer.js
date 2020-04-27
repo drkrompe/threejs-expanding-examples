@@ -10,6 +10,7 @@ import Tickable from '../../models/Tickable';
 import SceneService from '../../services/SceneService';
 import CameraService from '../../services/CameraService';
 import Collidable from '../../models/Collidable';
+import House from '../../prefab/building/House';
 
 export default class StarVisualizer extends React.Component {
 
@@ -24,6 +25,9 @@ export default class StarVisualizer extends React.Component {
         window.addEventListener('mouseup', this.onMousePress);
         this.props.updateFunctions.push(this.onTick);
         this.createXHumans(100);
+        const house = this.createHouseAt(Vec(1.5, 0));
+        TeamService.teams[0].add(house);
+        this.props.scene.add(house.dilsprite);
     }
 
     componentWillUnmount() {
@@ -100,6 +104,13 @@ export default class StarVisualizer extends React.Component {
         human.dilsprite.scale.x = 0.15
         human.dilsprite.scale.y = 0.15
         return human;
+    }
+
+    createHouseAt = (position = { x: 0, y: 0 }) => {
+        const house = new House(position, true, 0);
+        house.dilsprite.scale.x = 0.3
+        house.dilsprite.scale.y = 0.5
+        return house;
     }
 
     render() {
